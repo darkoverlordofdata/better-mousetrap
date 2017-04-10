@@ -94,14 +94,6 @@ public struct Sprite {
     }
 }
 
-public struct Core {
-    public int id;
-    public string name;
-    public bool active;
-    public Actor actor;
-    public Category category;
-}
-
 [SimpleStruct]
 public struct Entity {
     /* Core components: */
@@ -113,7 +105,6 @@ public struct Entity {
     public Point2d pos;
     public Rect bounds;
     public Vector2d scale;
-    public Sprite sprite;
 
     /* Optional components: */
     public Sound? sound; 
@@ -122,6 +113,8 @@ public struct Entity {
     public Health? health;
     public Tween? tween;
     public Vector2d? velocity;
+
+    public Sprite sprite;
 }
 
 public struct Metrics {
@@ -132,8 +125,8 @@ public struct Metrics {
     public int explosion;
     public int bang;
     public int particle;
-    public int all;
-    public Metrics(int bullet, int enemy1, int enemy2, int enemy3, int explosion, int bang, int particle, int all) {
+    public int count;
+    public Metrics(int bullet, int enemy1, int enemy2, int enemy3, int explosion, int bang, int particle, int count) {
         this.bullet = bullet;
         this.enemy1 = enemy1;
         this.enemy2 = enemy2;
@@ -141,7 +134,7 @@ public struct Metrics {
         this.explosion = explosion;
         this.bang = bang;
         this.particle = particle;
-        this.all = all;
+        this.count = count;
     }
 
 }

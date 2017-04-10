@@ -19,12 +19,12 @@
         "-X",       "-w",
         "-X",       "-lm",
         "-o",       "bin/test",
-        "vala/resources.c",
-        "vala/entities.gs",
-        "vala/components.vala",
-        "vala/systems.gs",
-        "vala/game.gs",
-        "vala/main.gs"
+        "src/resources.c",
+        "src/entities.gs",
+        "src/components.vala",
+        "src/systems.gs",
+        "src/game.gs",
+        "src/main.gs"
     ],
     "showOutput": "always"
 }

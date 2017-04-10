@@ -121,13 +121,13 @@ void Game::init() {
     const auto path = "";
     entities.reserve(141);
     createBackground(renderer, &entities, path);
-    for (int i=0; i<12; i++) createBullet(renderer, &entities, path);
-    for (int i=0; i<15; i++) createEnemy1(renderer, &entities, path);
-    for (int i=0; i<5; i++) createEnemy2(renderer, &entities, path);
-    for (int i=0; i<4; i++) createEnemy3(renderer, &entities, path);
-    for (int i=0; i<10; i++) createExplosion(renderer, &entities, path);
-    for (int i=0; i<12; i++) createBang(renderer, &entities, path);
-    for (int i=0; i<100; i++) createParticle(renderer, &entities, path);
+    for (int i=0; i<12; i++)    createBullet(renderer, &entities, path);
+    for (int i=0; i<15; i++)    createEnemy1(renderer, &entities, path);
+    for (int i=0; i<5; i++)     createEnemy2(renderer, &entities, path);
+    for (int i=0; i<4; i++)     createEnemy3(renderer, &entities, path);
+    for (int i=0; i<10; i++)    createExplosion(renderer, &entities, path);
+    for (int i=0; i<12; i++)    createBang(renderer, &entities, path);
+    for (int i=0; i<100; i++)   createParticle(renderer, &entities, path);
     player = createPlayer(renderer, &entities, path);
 }
 

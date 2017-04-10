@@ -18,11 +18,11 @@
         "-lgobject-2.0",
         "-lglib-2.0",
         "-obin/shmupwarz",
-        "src/resources.cc",
-        "src/entities.cc",
-        "src/systems.cc",
-        "src/game.cc",
-        "src/main.cc"
+        "cpp/resources.cc",
+        "cpp/entities.cc",
+        "cpp/systems.cc",
+        "cpp/game.cc",
+        "cpp/main.cc"
     ],
     "showOutput": "always"
 }

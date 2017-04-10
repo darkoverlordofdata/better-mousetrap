@@ -46,7 +46,7 @@ def main(args: array of string)
         mark1 = mark2
         k += 1
         d += delta
-        if (d >= 1.0) 
+        if d >= 1.0
             fps = k
             k = 0
             d = 0

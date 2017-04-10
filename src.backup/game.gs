@@ -86,16 +86,17 @@ class Game : Object
     /**
      * addSprite
      *
+     * sort into actor enum ranking for layer display order
+     *
      * @param entity to add
      */
     def addSprite(e:Entity*)
-        var ordinal = (int)e.actor
-        if sprites.size == 0
-            sprites.add(e)
+        var rank = (int)e.actor
+        if sprites.size == 0 do sprites.add(e)
         else
             var i = 0
             for s in sprites
-                if ordinal <= (int)s.actor
+                if rank <= (int)s.actor
                     sprites.insert(i, e)
                     return
                 else
@@ -122,7 +123,7 @@ class Game : Object
      */
     def stop()
         _isRunning = false
-        if missing.all > 0
+        if missing.count > 0
             print "====== Missing ======"
             print "bullet: %d", missing.bullet
             print "enemy1: %d", missing.enemy1
@@ -214,7 +215,7 @@ class Game : Object
         /** satisfy factory requests */
         for var e in unused do factorySystem(this, ref e)
 
-        if unSatisfied > 0 do doMetrics()
+        if unSatisfied > 0 do updateMetrics()
 
         /** Now for the game logic: */
         inputSystem(this, ref player)
@@ -233,8 +234,8 @@ class Game : Object
             if pool[i].active do entity.add(&pool[i])
             else do unused.add(&pool[i])
 
-    def doMetrics(abort:bool=true)
-        if unSatisfied > missing.all do missing.all = unSatisfied
+    def updateMetrics(abort:bool=true)
+        if unSatisfied > missing.count do missing.count = unSatisfied
         if bullets.size > 0     do if bullets.size > missing.bullet do missing.bullet = bullets.size
         if enemies1.size > 0    do if enemies1.size > missing.enemy1 do missing.enemy1 = enemies1.size
         if enemies2.size > 0    do if enemies2.size > missing.enemy2 do missing.enemy2 = enemies2.size

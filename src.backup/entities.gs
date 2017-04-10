@@ -56,9 +56,12 @@ def createBackground(game:Game, pool:array of Entity):Entity*
         Category.BACKGROUND,
         Point2d() {x = 0, y = 0}, 
         Rect() {x = 0, y = 0, w = w, h = h}, 
-        Vector2d() {x = scale, y = scale},
-        Sprite(Video.Texture.create_from_surface(game.renderer, surface), w, h)
+        Vector2d() {x = scale, y = scale}//,
+        // Sprite(Video.Texture.create_from_surface(game.renderer, surface), w, h)
     }
+    pool[id].sprite.texture = Video.Texture.create_from_surface(game.renderer, surface)
+    pool[id].sprite.width = w
+    pool[id].sprite.height = h
     return &pool[id]
 
 def createPlayer(game:Game, pool:array of Entity):Entity*
@@ -76,9 +79,12 @@ def createPlayer(game:Game, pool:array of Entity):Entity*
         Category.PLAYER,
         Point2d() {x = 0, y = 0}, 
         Rect() {x = 0, y = 0, w = w, h = h}, 
-        Vector2d() {x = scale, y = scale},
-        Sprite(Video.Texture.create_from_surface(game.renderer, surface), w, h)
+        Vector2d() {x = scale, y = scale}//,
+        //Sprite(Video.Texture.create_from_surface(game.renderer, surface), w, h)
     }
+    pool[id].sprite.texture = Video.Texture.create_from_surface(game.renderer, surface)
+    pool[id].sprite.width = w
+    pool[id].sprite.height = h
     return &pool[id]
 
 
@@ -98,7 +104,7 @@ def createBullet(game:Game, pool:array of Entity):Entity*
         Point2d() {x = 0, y = 0}, 
         Rect() {x = 0, y = 0, w = w, h = h}, 
         Vector2d() {x = scale, y = scale},
-        Sprite(Video.Texture.create_from_surface(game.renderer, surface), w, h),
+        //Sprite(Video.Texture.create_from_surface(game.renderer, surface), w, h),
         Sound(new SDLMixer.Chunk.WAV("/home/bruce/scala/shmupwarz/assets/sounds/pew.wav")),
         Color() {r = 0xd2, g = 0xfa, b = 0x00, a = 0xffa},
         Duration() {timer = 1.0},
@@ -106,6 +112,9 @@ def createBullet(game:Game, pool:array of Entity):Entity*
         null,
         Vector2d() {x = 0, y = -800}
     }
+    pool[id].sprite.texture = Video.Texture.create_from_surface(game.renderer, surface)
+    pool[id].sprite.width = w
+    pool[id].sprite.height = h
     return &pool[id]
 
 
@@ -133,7 +142,7 @@ def createEnemy1(game:Game, pool:array of Entity):Entity*
         Point2d() {x = 0, y = 0}, 
         Rect() {x = 0, y = 0, w = w, h = h}, 
         Vector2d() {x = scale, y = scale},
-        Sprite(Video.Texture.create_from_surface(game.renderer, surface), w, h),
+        //Sprite(Video.Texture.create_from_surface(game.renderer, surface), w, h),
         null,
         null,
         null,
@@ -141,6 +150,9 @@ def createEnemy1(game:Game, pool:array of Entity):Entity*
         null,
         Vector2d() {x = 0, y = 40}
     }
+    pool[id].sprite.texture = Video.Texture.create_from_surface(game.renderer, surface)
+    pool[id].sprite.width = w
+    pool[id].sprite.height = h
     return &pool[id]
 
 
@@ -168,7 +180,7 @@ def createEnemy2(game:Game, pool:array of Entity):Entity*
         Point2d() {x = 0, y = 0}, 
         Rect() {x = 0, y = 0, w = w, h = h}, 
         Vector2d() {x = scale, y = scale},
-        Sprite(Video.Texture.create_from_surface(game.renderer, surface), w, h),
+        //Sprite(Video.Texture.create_from_surface(game.renderer, surface), w, h),
         null,
         null,
         null,
@@ -176,6 +188,9 @@ def createEnemy2(game:Game, pool:array of Entity):Entity*
         null,
         Vector2d() {x = 0, y = 30}
     }
+    pool[id].sprite.texture = Video.Texture.create_from_surface(game.renderer, surface)
+    pool[id].sprite.width = w
+    pool[id].sprite.height = h
     return &pool[id]
 
 
@@ -202,7 +217,7 @@ def createEnemy3(game:Game, pool:array of Entity):Entity*
         Point2d() {x = 0, y = 0}, 
         Rect() {x = 0, y = 0, w = w, h = h}, 
         Vector2d() {x = scale, y = scale},
-        Sprite(Video.Texture.create_from_surface(game.renderer, surface), w, h),
+        //Sprite(Video.Texture.create_from_surface(game.renderer, surface), w, h),
         null,
         null,
         null,
@@ -210,6 +225,9 @@ def createEnemy3(game:Game, pool:array of Entity):Entity*
         null,
         Vector2d() {x = 0, y = 20}
     }
+    pool[id].sprite.texture = Video.Texture.create_from_surface(game.renderer, surface)
+    pool[id].sprite.width = w
+    pool[id].sprite.height = h
     return &pool[id]
     
 def initEnemy3(game: Game, ref entity:Entity*, x:int, y:int)
@@ -236,7 +254,7 @@ def createExplosion(game:Game, pool:array of Entity):Entity*
         Point2d() {x = 0, y = 0}, 
         Rect() {x = 0, y = 0, w = w, h = h}, 
         Vector2d() {x = scale, y = scale},
-        Sprite(Video.Texture.create_from_surface(game.renderer, surface), w, h),
+        //Sprite(Video.Texture.create_from_surface(game.renderer, surface), w, h),
         Sound(new SDLMixer.Chunk.WAV("/home/bruce/scala/shmupwarz/assets/sounds/asplode.wav")),
         Color() {r = 0xd2, g = 0xfa, b = 0xd2, a = 0xfa},
         Duration() {timer = 0.2},
@@ -244,6 +262,9 @@ def createExplosion(game:Game, pool:array of Entity):Entity*
         Tween() {min = scale/100.0, max = scale, speed = -3, repeat = false, active = true},
         null
     }
+    pool[id].sprite.texture = Video.Texture.create_from_surface(game.renderer, surface)
+    pool[id].sprite.width = w
+    pool[id].sprite.height = h
     return &pool[id]
 
 def initExplosion(game: Game, ref entity:Entity*, x:int, y:int)
@@ -274,7 +295,7 @@ def createBang(game:Game, pool:array of Entity):Entity*
         Point2d() {x = 0, y = 0}, 
         Rect() {x = 0, y = 0, w = w, h = h}, 
         Vector2d() {x = scale, y = scale},
-        Sprite(Video.Texture.create_from_surface(game.renderer, surface), w, h),
+        //Sprite(Video.Texture.create_from_surface(game.renderer, surface), w, h),
         Sound(new SDLMixer.Chunk.WAV("/home/bruce/scala/shmupwarz/assets/sounds/smallasplode.wav")),
         Color() {r = 0xd2, g = 0xfa, b = 0xd2, a = 0xfa},
         Duration() {timer = 0.2},
@@ -282,6 +303,9 @@ def createBang(game:Game, pool:array of Entity):Entity*
         Tween() {min = scale/100.0, max = scale, speed = -3, repeat = false, active = true},
         null
     }
+    pool[id].sprite.texture = Video.Texture.create_from_surface(game.renderer, surface)
+    pool[id].sprite.width = w
+    pool[id].sprite.height = h
     return &pool[id]
 
 
@@ -313,7 +337,7 @@ def createParticle(game:Game, pool:array of Entity):Entity*
         Point2d() {x = 0, y = 0}, 
         Rect() {x = 0, y = 0, w = w, h = h}, 
         Vector2d() {x = scale, y = scale},
-        Sprite(Video.Texture.create_from_surface(game.renderer, surface), w, h),
+        //Sprite(Video.Texture.create_from_surface(game.renderer, surface), w, h),
         null,
         Color() {r = 0xd2, g = 0xfa, b = 0xd2, a = 0xfa},
         Duration() {timer = 0.75},
@@ -321,6 +345,9 @@ def createParticle(game:Game, pool:array of Entity):Entity*
         null,
         Vector2d() {x = 0, y = 0}
     }
+    pool[id].sprite.texture = Video.Texture.create_from_surface(game.renderer, surface)
+    pool[id].sprite.width = w
+    pool[id].sprite.height = h
     return &pool[id]
 
 
