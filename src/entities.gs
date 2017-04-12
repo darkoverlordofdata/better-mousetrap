@@ -1,214 +1,258 @@
 [indent=4]
 uses SDL
 uses SDL.Video
-/** 
- * Entity Factory
- */
+uses SDLMixer
 
-const Tau:double = 2.0 * Math.PI
+namespace demo
 
+    const TAU: double = 2.0 * Math.PI
+    /** 
+    * Entity Factory
+    */
+    enum Kind
+        BACKGROUND
+        ENEMY1
+        ENEMY2
+        ENEMY3
+        PLAYER
+        BULLET
+        EXPLOSION
+        BANG
+        PARTICLE
+        Count
 
-class Factory
-    id: static int = 0
+    class Factory
+        world       : World
+        game        : ShmupWarz
+        rand        : Rand
+        player      : Entity*
 
-// todo: load sound from res
-// var rw = new SDL.RWops.from_mem((void*)ptr.get_data(), (int)ptr.get_size())
-// chunk = new SDLMixer.Chunk.WAV_RW(rw)
-        // Sound(new SDLMixer.Chunk.WAV("/home/bruce/scala/shmupwarz/assets/sounds/pew.wav")),
+        construct(game:ShmupWarz, world:World)
+            this.game = game
+            this.world = world
+            rand = new Rand()
+            world.setPool(256, {
+                Config() { kind = Kind.BULLET,      size = 12,  alloc = createBullet },
+                Config() { kind = Kind.ENEMY1,      size = 15,  alloc = createEnemy1 },
+                Config() { kind = Kind.ENEMY2,      size = 5,   alloc = createEnemy2 },
+                Config() { kind = Kind.ENEMY3,      size = 4,   alloc = createEnemy3 },
+                Config() { kind = Kind.EXPLOSION,   size = 10,  alloc = createExplosion },
+                Config() { kind = Kind.BANG,        size = 12,  alloc = createBang },
+                Config() { kind = Kind.PARTICLE,    size = 100, alloc = createParticle }
+            })
 
-/**
- * getResource
- *
- * gets resource from gio resource compiler 
- *
- * @param name
- * @return surface
- */
-def getResource(name:string):Surface 
+        /**
+        * createEntity
+        *
+        * creates the core entity with builtin components
+        *
+        * @param name
+        * @param kind
+        * @param scale
+        * @param path
+        * @param active
+        * @returns entity id 
+        */
+        def createEntity(name:string, kind:Kind, path:string, scale:double = 1.0, active:bool = false):Entity*
 
-    var ptr = GLib.resources_lookup_data("/darkoverlordofdata/shmupwarz/images/"+name, 0)
-    if (ptr == null) 
-        return null
-     else 
-        var raw = new SDL.RWops.from_mem((void*)ptr.get_data(), (int)ptr.get_size())
-        return SDLImage.load_png(raw)
-
-/**
- * createEntity
- *
- * @param game
- * @param pool
- * @param name
- * @param actor
- * @param category
- * @param scale
- * @param path
- * @param active
- * @returns entity id 
- */
-def createEntity(game:Game, pool:array of Entity, name:string, actor:Actor, 
-                    category:Category, path:string, scale:double = 1.0, active:bool = false):int
-
-    var surface = getResource(path)
-    var w = (int)((double)surface.w*scale)
-    var h = (int)((double)surface.h*scale)
-    var id = Factory.id++
-
-    pool[id].id = id
-    pool[id].name = name
-    pool[id].active = active
-    pool[id].actor = actor
-    pool[id].category = category
-    pool[id].pos.x = 0
-    pool[id].pos.y = 0
-    pool[id].bounds.x = 0
-    pool[id].bounds.y = 0
-    pool[id].bounds.w = w
-    pool[id].bounds.h = h
-    pool[id].scale.x = scale
-    pool[id].scale.y = scale
-    pool[id].sprite.texture = Video.Texture.create_from_surface(game.renderer, surface)
-    pool[id].sprite.width = w
-    pool[id].sprite.height = h
-    return id
-
-/**
- * createBackground
- *
- * create background entity 
- *
- * @param game
- * @return id
- */
-def createBackground(game:Game, pool:array of Entity):Entity*
-    var id = createEntity(game, pool, "background", Actor.BACKGROUND, Category.BACKGROUND, "BackdropBlackLittleSparkBlack.png", 2.0, true)
-    return &pool[id]
-
-def createPlayer(game:Game, pool:array of Entity):Entity*
-    var id = createEntity(game, pool, "player", Actor.PLAYER, Category.PLAYER, "spaceshipspr.png", 1.0, true)
-    return &pool[id]
-
-def createBullet(game:Game, pool:array of Entity):Entity*
-    var id = createEntity(game, pool, "bullet", Actor.BULLET, Category.BULLET, "bullet.png")
-    //pool[id].sound = Sound(new SDLMixer.Chunk.WAV("/home/bruce/scala/shmupwarz/assets/sounds/pew.wav"))
-    pool[id].tint = Color() {r = 0xd2, g = 0xfa, b = 0x00, a = 0xffa}
-    pool[id].expires = Duration() {timer = 1.0}
-    pool[id].health = Health() {current = 2, maximum = 2}
-    pool[id].velocity = Vector2d() {x = 0, y = -800}
-    return &pool[id]
-
-def initBullet(game: Game, ref entity:Entity*, x:int, y:int) 
-    entity.pos.x = x
-    entity.pos.y = y
-    entity.expires.timer = 1.0
-    entity.active = true
-    game.addSprite(entity)
-
-def createEnemy1(game:Game, pool:array of Entity):Entity*
-    var id = createEntity(game, pool, "enemy1", Actor.ENEMY1, Category.ENEMY, "enemy1.png")
-    pool[id].health = Health() {current = 10, maximum = 10}
-    pool[id].velocity = Vector2d() {x = 0, y = 40}
-    return &pool[id]
+            var surface = getSurface(path)
+            var w = (int)((double)surface.w*scale)
+            var h = (int)((double)surface.h*scale)
+            return (world.createEntity()
+                .setName(name)
+                .setActive(active)
+                .setKind(kind)
+                .setPos(0, 0)
+                .setBounds(0, 0, w, h)
+                .setScale(scale, scale)
+                .setSprite(Video.Texture.create_from_surface(game.renderer, surface), w, h))
 
 
-def initEnemy1(game: Game, ref entity:Entity*, x:int, y:int) 
-    entity.pos.x = x
-    entity.pos.y = y
-    entity.health.current = 10
-    entity.active = true
-    game.addSprite(entity)
+
+        /**
+        * createBackground
+        *
+        * create background entity 
+        *
+        * @param game
+        * @return id
+        */
+        def createBackground():Entity*
+            return createEntity("background", Kind.BACKGROUND, "BackdropBlackLittleSparkBlack.png", 2.0, true)
+
+        def createPlayer():Entity*
+            return player = createEntity("player", Kind.PLAYER, "spaceshipspr.png", 1.0, true)
+
+        def createBullet():Entity*
+            return (
+                createEntity("bullet", Kind.BULLET, "bullet.png")
+                .addSound(getChunk("pew.wav"))
+                .addTint(0xd2, 0xfa, 0, 0xfa)
+                .addExpires(1.0)
+                .addHealth(2, 2)
+                .addVelocity(0, -800))
+
+        def createEnemy1():Entity*
+            return (
+                createEntity("enemy1", Kind.ENEMY1, "enemy1.png")
+                .addHealth(10, 10)
+                .addVelocity(0, 40))
+
+        def createEnemy2():Entity*
+            return (
+                createEntity("enemy2", Kind.ENEMY2, "enemy2.png")
+                .addHealth(20, 20)
+                .addVelocity(0, 30))
+
+        def createEnemy3():Entity*
+            return (
+                createEntity("enemy3", Kind.ENEMY3, "enemy3.png")
+                .addHealth(60, 60)
+                .addVelocity(0, 20))
+            
+        def createExplosion():Entity*
+            return (
+                createEntity("explosion", Kind.EXPLOSION, "explosion.png", 0.6)
+                .addSound(getChunk("asplode.wav"))
+                .addTint(0xd2, 0xfa, 0xd2, 0xfa)
+                .addExpires(0.2)
+                .addTween(0.006, 0.6, -3, false, true))
+
+        def createBang():Entity*
+            return (
+                createEntity("bang", Kind.BANG, "explosion.png", 0.4)
+                .addSound(getChunk("smallasplode.wav"))
+                .addTint(0xd2, 0xfa, 0xd2, 0xfa)
+                .addExpires(0.2)
+                .addTween(0.004, 0.4, -3, false, true))
+
+        def createParticle():Entity*
+            return (
+                createEntity("particlebang", Kind.PARTICLE, "star.png")
+                .addTint(0xd2, 0xfa, 0xd2, 0xfa)
+                .addExpires(0.75)
+                .addVelocity(0, 0))
+
+        def newBullet(x:int, y:int)
+            if world.cache[Kind.BULLET].is_empty 
+                for var i=1 to 10 do world.cache[Kind.BULLET].add(createBullet())
+            var entity = world.cache[Kind.BULLET].remove_at(0)
+            game.addSprite(entity
+                .setPos(x, y)
+                .setExpires(1.0)
+                .setActive(true))
+
+        def newEnemy1(x:int, y:int) 
+            if world.cache[Kind.ENEMY1].is_empty
+                for var i=1 to 10 do world.cache[Kind.ENEMY1].add(createEnemy1())
+
+            var entity = world.cache[Kind.ENEMY1].remove_at(0)
+            game.addSprite(entity
+                .setPos(x, y)
+                .setHealth(10, 10)
+                .setActive(true))
+
+        def newEnemy2(x:int, y:int) 
+            if world.cache[Kind.ENEMY2].is_empty
+                for var i=1 to 10 do world.cache[Kind.ENEMY2].add(createEnemy2())
+
+            var entity = world.cache[Kind.ENEMY2].remove_at(0)
+            game.addSprite(entity
+                .setPos(x, y)
+                .setHealth(20, 20) 
+                .setActive(true))
+
+        def newEnemy3(x:int, y:int) 
+            if world.cache[Kind.ENEMY3].is_empty
+                for var i=1 to 10 do world.cache[Kind.ENEMY3].add(createEnemy3())
+
+            var entity = world.cache[Kind.ENEMY3].remove_at(0)
+            game.addSprite(entity
+                .setPos(x, y)
+                .setHealth(60, 60)
+                .setActive(true))
+
+        def newExplosion(x:int, y:int)
+            if world.cache[Kind.EXPLOSION].is_empty
+                for var i=1 to 10 do world.cache[Kind.EXPLOSION].add(createExplosion())
+
+            var entity = world.cache[Kind.EXPLOSION].remove_at(0)
+            game.addSprite(entity
+                .setBounds(x, y, (int)entity.bounds.w, (int)entity.bounds.h)
+                .setTween(0.006, 0.6, -3, false, true)
+                .setPos(x, y)
+                .setScale(0.6, 0.6)
+                .setExpires(0.2)
+                .setActive(true))
+
+        def newBang(x:int, y:int)
+            if world.cache[Kind.BANG].is_empty
+                for var i=1 to 10 do world.cache[Kind.BANG].add(createBang())
+
+            var entity = world.cache[Kind.BANG].remove_at(0)
+            game.addSprite(entity
+                .setBounds(x, y, (int)entity.bounds.w, (int)entity.bounds.h)
+                .setTween(0.006, 0.4, -3, false, true)
+                .setPos(x, y)
+                .setScale(0.4, 0.4)
+                .setExpires(0.2)
+                .setActive(true))
+
+        def newParticle(x:int, y:int) 
+            if world.cache[Kind.PARTICLE].is_empty
+                for var i=1 to 20 do world.cache[Kind.PARTICLE].add(createParticle())  
+
+            var entity = world.cache[Kind.PARTICLE].remove_at(0)
+            var radians = rand.next_double() * TAU
+            var magnitude = rand.int_range(0, 200)
+            var velocityX = magnitude * Math.cos(radians)
+            var velocityY = magnitude * Math.sin(radians)
+            var scale = rand.double_range(0.1, 1.0)
+
+            game.addSprite(entity
+                .setBounds(x, y, (int)entity.bounds.w, (int)entity.bounds.h)
+                .setPos(x, y)
+                .setScale(scale, scale)
+                .setVelocity(velocityX, velocityY)
+                .setExpires(0.75)
+                .setActive(true))
 
 
-def createEnemy2(game:Game, pool:array of Entity):Entity*
-    var id = createEntity(game, pool, "enemy2", Actor.ENEMY2, Category.ENEMY, "enemy2.png")
-    pool[id].health = Health() {current = 20, maximum = 20}
-    pool[id].velocity = Vector2d() {x = 0, y = 30}
-    return &pool[id]
+        /**
+        * getSurface
+        *
+        * get image resource from gio resource compiler 
+        *
+        * @param resource name
+        * @return surface
+        */
+        def getSurface(name:string):Surface 
 
-def initEnemy2(game: Game, ref entity:Entity*, x:int, y:int)
-    entity.pos.x = x
-    entity.pos.y = y
-    entity.health.current = 20
-    entity.active = true
-    game.addSprite(entity)
+            var ptr = GLib.resources_lookup_data(@"$URI/images/$name", 0)
+            if (ptr == null) 
+                logSDLError(@"load resource: $URI/images/$name")
+                return null
+            else 
+                var raw = new SDL.RWops.from_mem((void*)ptr.get_data(), (int)ptr.get_size())
+                return SDLImage.load_png(raw)
 
-def createEnemy3(game:Game, pool:array of Entity):Entity*
-    var id = createEntity(game, pool, "enemy3", Actor.ENEMY3, Category.ENEMY, "enemy3.png")
-    pool[id].health = Health() {current = 60, maximum = 60}
-    pool[id].velocity = Vector2d() {x = 0, y = 20}
-    return &pool[id]
-    
-def initEnemy3(game: Game, ref entity:Entity*, x:int, y:int)
-    entity.pos.x = x
-    entity.pos.y = y
-    entity.health.current = 60
-    entity.active = true
-    game.addSprite(entity)
 
-def createExplosion(game:Game, pool:array of Entity):Entity*
-    var id = createEntity(game, pool, "explosion", Actor.EXPLOSION, Category.EXPLOSION, "explosion.png", 0.6)
-    //pool[id].sound = Sound(new SDLMixer.Chunk.WAV("/home/bruce/scala/shmupwarz/assets/sounds/asplode.wav"))
-    pool[id].tint = Color() {r = 0xd2, g = 0xfa, b = 0xd2, a = 0xfa}
-    pool[id].expires = Duration() {timer = 0.2}
-    pool[id].tween = Tween() {min = 0.006, max = 0.6, speed = -3, repeat = false, active = true}
-    return &pool[id]
+        /**
+        * getChunk
+        *
+        * get sound resource from gio resource compiler 
+        *
+        * @param resource name
+        * @return chunk
+        */
+        def getChunk(name:string):Chunk
+            var ptr = GLib.resources_lookup_data(@"$URI/sounds/$name", 0)
+            if (ptr == null) 
+                logSDLError(@"load resource: $URI/sounds/$name")
+                return null
+            else 
+                var raw = new SDL.RWops.from_mem((void*)ptr.get_data(), (int)ptr.get_size())
+                return new SDLMixer.Chunk.WAV_RW(raw)
 
-def initExplosion(game: Game, ref entity:Entity*, x:int, y:int)
-    entity.pos.x = x
-    entity.pos.y = y
-    entity.bounds.x = x 
-    entity.bounds.y = y 
-    entity.scale.x = 0.6
-    entity.scale.y = 0.6
-    entity.tween.active = true
-    entity.expires.timer = 0.2
-    entity.active = true
-    game.addSprite(entity)
-
-def createBang(game:Game, pool:array of Entity):Entity*
-    var id = createEntity(game, pool, "bang", Actor.BANG, Category.EXPLOSION, "explosion.png", 0.4)
-    //pool[id].sound = Sound(new SDLMixer.Chunk.WAV("/home/bruce/scala/shmupwarz/assets/sounds/smallasplode.wav"))
-    pool[id].tint = Color() {r = 0xd2, g = 0xfa, b = 0xd2, a = 0xfa}
-    pool[id].expires = Duration() {timer = 0.2}
-    pool[id].tween = Tween() {min = 0.004, max = 0.4, speed = -3, repeat = false, active = true}
-    return &pool[id]
-
-def initBang(game: Game, ref entity:Entity*, x:int, y:int)
-    entity.pos.x = x
-    entity.pos.y = y
-    entity.bounds.x = x 
-    entity.bounds.y = y 
-    entity.scale.x = 0.4
-    entity.scale.y = 0.4
-    entity.tween.active = true
-    entity.expires.timer = 0.2
-    entity.active = true
-    game.addSprite(entity)
-
-def createParticle(game:Game, pool:array of Entity):Entity*
-    var id = createEntity(game, pool, "particle", Actor.PARTICLE, Category.PARTICLE, "star.png", 0.4)
-    pool[id].tint = Color() {r = 0xd2, g = 0xfa, b = 0xd2, a = 0xfa}
-    pool[id].expires = Duration() {timer = 0.75}
-    pool[id].velocity = Vector2d() {x = 0, y = 0}
-    return &pool[id]
-
-def initParticle(game: Game, ref entity:Entity*, x:int, y:int)
-    var radians = game.rand.next_double() * Tau 
-    var magnitude = game.rand.int_range(0, 200)
-    var velocityX = magnitude * Math.cos(radians)
-    var velocityY = magnitude * Math.sin(radians)
-    var scale = game.rand.double_range(0.1, 1.0)
-
-    entity.pos.x = x
-    entity.pos.y = y
-    entity.bounds.x = x 
-    entity.bounds.y = y 
-    entity.scale.x = scale
-    entity.scale.y = scale
-    entity.velocity.x = velocityX
-    entity.velocity.y = velocityY
-    entity.expires.timer = 0.75
-    entity.active = true
-    game.addSprite(entity)
 
 

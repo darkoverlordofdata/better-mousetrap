@@ -1,0 +1,42 @@
+[indent=4]
+uses SDL
+uses SDL.Video
+uses SDLImage
+
+
+class SpawnSystem : Object implements ISystem
+
+    game:Game
+    factory:Factory
+    enemyT1     : double = 1.0
+    enemyT2     : double = 4.0
+    enemyT3     : double = 6.0
+
+    construct(game:Game, factory:Factory)
+        this.game = game
+        this.factory = factory
+
+    def spawnEnemy(delta:double , t:double , enemy:int):double 
+        var d1 = t-delta
+        if (d1 < 0.0) 
+            case enemy
+                when 1
+                    factory.fireEnemy1(factory.rand.int_range(35, game.width-35), 35)
+                    return 1.0
+                when 2
+                    factory.fireEnemy2(factory.rand.int_range(85, game.width-85), 85)
+                    return 4.0
+                when 3
+                    factory.fireEnemy3(factory.rand.int_range(160, game.width-160), 160)
+                    return 6.0
+                default
+                    return 0.0
+            
+        else 
+            return d1    
+
+    def execute()
+        enemyT1 = spawnEnemy(game.delta, enemyT1, 1)
+        enemyT2 = spawnEnemy(game.delta, enemyT2, 2)
+        enemyT3 = spawnEnemy(game.delta, enemyT3, 3)
+

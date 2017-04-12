@@ -17,7 +17,7 @@
         "-lgio-2.0",
         "-lgobject-2.0",
         "-lglib-2.0",
-        "-obin/shmupwarz",
+        "-obin/testcpp",
         "cpp/resources.cc",
         "cpp/entities.cc",
         "cpp/systems.cc",
