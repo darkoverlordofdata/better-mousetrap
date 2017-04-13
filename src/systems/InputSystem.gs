@@ -16,6 +16,7 @@ namespace demo
         construct(game:Game, factory:Factory)
             this.game = game
             this.factory = factory
+            //Sdx.input.setInputProcessor(this)
 
         def setWorld(world:World)
             this.world = world

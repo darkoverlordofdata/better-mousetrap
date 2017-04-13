@@ -4,8 +4,15 @@ uses SDL.Video
 uses SDLMixer
 
 namespace demo
-
     const TAU: double = 2.0 * Math.PI
+
+    exception Exception 
+        SDLException
+
+    def inline logSDLError(reason: string)
+        raise new Exception.SDLException(reason + ", SDL error: " + SDL.get_error())
+        GLib.Process.exit(0)
+
     /** 
     * Entity Factory
     */
@@ -23,11 +30,11 @@ namespace demo
 
     class Factory
         world       : World
-        game        : ShmupWarz
+        game        : ISpriteManager
         rand        : Rand
         player      : Entity*
 
-        construct(game:ShmupWarz, world:World)
+        construct(game:ISpriteManager, world:World)
             this.game = game
             this.world = world
             rand = new Rand()
@@ -65,7 +72,8 @@ namespace demo
                 .setPos(0, 0)
                 .setBounds(0, 0, w, h)
                 .setScale(scale, scale)
-                .setSprite(Video.Texture.create_from_surface(game.renderer, surface), w, h))
+                .setSprite(game.createTexture(surface), w, h))
+                // .setSprite(Video.Texture.create_from_surface(game.renderer, surface), w, h))
 
 
 

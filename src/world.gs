@@ -18,9 +18,12 @@ namespace demo
     interface IEntityRemoved : Object
         def abstract entityRemoved(e:Entity*)
 
+    interface ISpriteManager: Object
+        def abstract addSprite(e:Entity*)
+        def abstract createTexture(surface:SDL.Video.Surface):SDL.Video.Texture
+
     class World
 
-        game        : Game
         pool        : array of Entity
         cache       : array of list of Entity* 
         systems     : list of ISystem = new list of ISystem
@@ -28,9 +31,8 @@ namespace demo
         listener    : IEntityRemoved
         id          : private int = 0
 
-        construct(game:Game)
-            this.game = game
-            setEntityRemovedListener((IEntityRemoved)game)
+        construct(listener:IEntityRemoved)
+            setEntityRemovedListener((IEntityRemoved)listener)
 
         def setPool(size:int, config: array of Config)
             pool = new array of Entity[size]

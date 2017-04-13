@@ -5,7 +5,7 @@ namespace demo
         EntityAlreadyHasComponent
         EntityDoesNotHaveComponent
 
-    [SimpleStruct]
+    [SimpleType]
     struct Point2d 
         x       : double
         y       : double
@@ -15,7 +15,7 @@ namespace demo
         def sub(v:Vector2d):Point2d
             return { x-v.x, y-v.y }
 
-    [SimpleStruct]
+    [SimpleType]
     struct Vector2d
         x       : double
         y       : double
@@ -27,28 +27,28 @@ namespace demo
         def len():double
             return Math.sqrt(x*x + y*y)
 
-    [SimpleStruct]
+    [SimpleType]
     struct Scale 
         x       : double
         y       : double
 
-    [SimpleStruct]
+    [SimpleType]
     struct Color 
         r       : int
         g       : int
         b       : int
         a       : int
 
-    [SimpleStruct]
+    [SimpleType]
     struct Health 
         current : int
         maximum : int
 
-    [SimpleStruct]
+    [SimpleType]
     struct Duration 
         timer   : double
 
-    [SimpleStruct]
+    [SimpleType]
     struct Tween 
         min     : double
         max     : double
@@ -56,17 +56,16 @@ namespace demo
         repeat  : bool
         active  : bool
 
-    [SimpleStruct]
+    [SimpleType]
     struct Sound 
         effect  : SDLMixer.Chunk*
 
-    [SimpleStruct]
+    [SimpleType]
     struct Sprite 
         texture : SDL.Video.Texture* 
         width   : int
         height  : int
 
-    [SimpleStruct]
     struct Entity 
         /* Core components: */
         id      : int

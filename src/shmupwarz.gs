@@ -6,7 +6,7 @@ namespace demo
 
     const URI : string = "/darkoverlordofdata/shmupwarz"
 
-    class ShmupWarz : Game implements IEntityRemoved
+    class ShmupWarz : Game implements IEntityRemoved, ISpriteManager
 
         factory     : Factory
         world       : World
@@ -37,6 +37,9 @@ namespace demo
                 //.add(new SoundSystem(this, factory)
             )
 
+            
+        def createTexture(surface:SDL.Video.Surface):SDL.Video.Texture
+            return SDL.Video.Texture.create_from_surface(renderer, surface)
             
         def entityRemoved(e:Entity*)
             sprites.remove(e)
