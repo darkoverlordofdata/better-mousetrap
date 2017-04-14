@@ -7,8 +7,8 @@ namespace demo
 
     [SimpleType]
     struct Point2d 
-        x       : double
-        y       : double
+        x   : double
+        y   : double
 
         def add(v:Vector2d):Point2d
             return { x+v.x, y+v.y }
@@ -17,8 +17,8 @@ namespace demo
 
     [SimpleType]
     struct Vector2d
-        x       : double
-        y       : double
+        x   : double
+        y   : double
 
         def mul(f:double):Vector2d
             return { x*f, y*f }
@@ -29,15 +29,15 @@ namespace demo
 
     [SimpleType]
     struct Scale 
-        x       : double
-        y       : double
+        x   : double
+        y   : double
 
     [SimpleType]
     struct Color 
-        r       : int
-        g       : int
-        b       : int
-        a       : int
+        r   : int
+        g   : int
+        b   : int
+        a   : int
 
     [SimpleType]
     struct Health 
@@ -56,13 +56,13 @@ namespace demo
         repeat  : bool
         active  : bool
 
-    [SimpleType]
+    [SimpleType] 
     struct Sound 
-        effect  : SDLMixer.Chunk*
+        effect  : sdx.audio.Sound* //SDLMixer.Chunk*
 
-    [SimpleType]
+    // [SimpleType] 
     struct Sprite 
-        texture : SDL.Video.Texture* 
+        texture : sdx.graphics.s2d.Sprite //SDL.Video.Texture* 
         width   : int
         height  : int
 
@@ -118,7 +118,8 @@ namespace demo
             scale.y = y
             return &this
 
-        def setSprite(texture:SDL.Video.Texture*, width:int, height:int):Entity*
+        // def setSprite(texture:SDL.Video.Texture*, width:int, height:int):Entity*
+        def setSprite(texture:sdx.graphics.s2d.Sprite, width:int, height:int):Entity*
             sprite.texture = texture
             sprite.width = width
             sprite.height = height
@@ -127,12 +128,14 @@ namespace demo
         def hasSound():bool
             return sound != null
 
-        def addSound(effect:SDLMixer.Chunk*):Entity*
+        // def addSound(effect:SDLMixer.Chunk*):Entity*
+        def addSound(effect:sdx.audio.Sound):Entity*
             if sound != null do raise new Ecs.EntityAlreadyHasComponent("effect")
             this.sound = { effect }
             return &this
 
-        def setSound(effect:SDLMixer.Chunk*):Entity*
+        // def setSound(effect:SDLMixer.Chunk*):Entity*
+        def setSound(effect:sdx.audio.Sound):Entity*
             if sound == null do raise new Ecs.EntityDoesNotHaveComponent("effect")
             this.sound.effect = effect
             return &this

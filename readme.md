@@ -4,7 +4,7 @@ Building a better mousetrap
 
 @see http://gameprogrammingpatterns.com/data-locality.html
 
-A more functional style using c++ and vala.
+A more functional style comparng c++ and vala.
 
 
 Both are about the same speed... 0.000040 - 0.000054 ms

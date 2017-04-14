@@ -8,10 +8,10 @@ namespace demo
     class PhysicsSystem : Object implements ISystem
 
         world:World
-        game:Game
+        game:Basic
         factory:Factory
 
-        construct(game:Game, factory:Factory)
+        construct(game:Basic, factory:Factory)
             this.game = game
             this.factory = factory
 
@@ -27,4 +27,5 @@ namespace demo
                 entity.pos = entity.pos.add(entity.velocity.mul(game.delta))
                 // entity.pos.x += entity.velocity.x * game.delta
                 // entity.pos.y += entity.velocity.y * game.delta
+
 

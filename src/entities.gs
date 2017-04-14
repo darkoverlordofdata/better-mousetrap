@@ -1,17 +1,9 @@
 [indent=4]
-uses SDL
-uses SDL.Video
-uses SDLMixer
+uses sdx
+uses sdx.graphics.s2d
 
 namespace demo
     const TAU: double = 2.0 * Math.PI
-
-    exception Exception 
-        SDLException
-
-    def inline logSDLError(reason: string)
-        raise new Exception.SDLException(reason + ", SDL error: " + SDL.get_error())
-        GLib.Process.exit(0)
 
     /** 
     * Entity Factory
@@ -30,14 +22,18 @@ namespace demo
 
     class Factory
         world       : World
-        game        : ISpriteManager
         rand        : Rand
-        player      : Entity*
+        listener    : EntityAddedListener
 
-        construct(game:ISpriteManager, world:World)
-            this.game = game
+        prop readonly atlas: TextureAtlas
+
+        construct(world:World)
             this.world = world
             rand = new Rand()
+            // var file = Sdx.files.resource("orig/pack.atlas")
+            // assert(file.exists())
+            // _atlas = new TextureAtlas.file(file)
+            
             world.setPool(256, {
                 Config() { kind = Kind.BULLET,      size = 12,  alloc = createBullet },
                 Config() { kind = Kind.ENEMY1,      size = 15,  alloc = createEnemy1 },
@@ -48,6 +44,9 @@ namespace demo
                 Config() { kind = Kind.PARTICLE,    size = 100, alloc = createParticle }
             })
 
+
+        def setEntityAddedListener(listener:EntityAddedListener)
+            this.listener = listener
         /**
         * createEntity
         *
@@ -61,20 +60,16 @@ namespace demo
         * @returns entity id 
         */
         def createEntity(name:string, kind:Kind, path:string, scale:double = 1.0, active:bool = false):Entity*
-
-            var surface = getSurface(path)
-            var w = (int)((double)surface.w*scale)
-            var h = (int)((double)surface.h*scale)
+            var sprite = new sdx.graphics.s2d.Sprite(@"images/$path.png")
+            // var sprite = atlas.createSprite(path, -1)
             return (world.createEntity()
                 .setName(name)
                 .setActive(active)
                 .setKind(kind)
                 .setPos(0, 0)
-                .setBounds(0, 0, w, h)
+                .setBounds(0, 0, sprite.width, sprite.height)
                 .setScale(scale, scale)
-                .setSprite(game.createTexture(surface), w, h))
-                // .setSprite(Video.Texture.create_from_surface(game.renderer, surface), w, h))
-
+                .setSprite(sprite, sprite.width, sprite.height))
 
 
         /**
@@ -85,16 +80,21 @@ namespace demo
         * @param game
         * @return id
         */
-        def createBackground():Entity*
-            return createEntity("background", Kind.BACKGROUND, "BackdropBlackLittleSparkBlack.png", 2.0, true)
+        def createBackground()
+            var b = createEntity("background", Kind.BACKGROUND, "BackdropBlackLittleSparkBlack", 2.0, true)
+            //b.sprite.texture.centered = false
+            // print "(%d,%d)", b.sprite.texture.height, b.sprite.texture.width 
+            listener.entityAdded(b)
 
         def createPlayer():Entity*
-            return player = createEntity("player", Kind.PLAYER, "spaceshipspr.png", 1.0, true)
+            var player = createEntity("player", Kind.PLAYER, "spaceshipspr", 1.0, true)
+            listener.entityAdded(player)
+            return player
 
         def createBullet():Entity*
             return (
-                createEntity("bullet", Kind.BULLET, "bullet.png")
-                .addSound(getChunk("pew.wav"))
+                createEntity("bullet", Kind.BULLET, "bullet")
+                //.addSound(getChunk("pew.wav"))
                 .addTint(0xd2, 0xfa, 0, 0xfa)
                 .addExpires(1.0)
                 .addHealth(2, 2)
@@ -102,41 +102,41 @@ namespace demo
 
         def createEnemy1():Entity*
             return (
-                createEntity("enemy1", Kind.ENEMY1, "enemy1.png")
+                createEntity("enemy1", Kind.ENEMY1, "enemy1")
                 .addHealth(10, 10)
                 .addVelocity(0, 40))
 
         def createEnemy2():Entity*
             return (
-                createEntity("enemy2", Kind.ENEMY2, "enemy2.png")
+                createEntity("enemy2", Kind.ENEMY2, "enemy2")
                 .addHealth(20, 20)
                 .addVelocity(0, 30))
 
         def createEnemy3():Entity*
             return (
-                createEntity("enemy3", Kind.ENEMY3, "enemy3.png")
+                createEntity("enemy3", Kind.ENEMY3, "enemy3")
                 .addHealth(60, 60)
                 .addVelocity(0, 20))
             
         def createExplosion():Entity*
             return (
-                createEntity("explosion", Kind.EXPLOSION, "explosion.png", 0.6)
-                .addSound(getChunk("asplode.wav"))
-                .addTint(0xd2, 0xfa, 0xd2, 0xfa)
+                createEntity("explosion", Kind.EXPLOSION, "explosion", 0.6)
+                //.addSound(getChunk("asplode.wav"))
+                .addTint(0xd2, 0xfa, 0xd2, 0x7f)
                 .addExpires(0.2)
                 .addTween(0.006, 0.6, -3, false, true))
 
         def createBang():Entity*
             return (
-                createEntity("bang", Kind.BANG, "explosion.png", 0.4)
-                .addSound(getChunk("smallasplode.wav"))
-                .addTint(0xd2, 0xfa, 0xd2, 0xfa)
+                createEntity("bang", Kind.BANG, "explosion", 0.3)
+                //.addSound(getChunk("smallasplode.wav"))
+                .addTint(0xd2, 0xfa, 0xd2, 0x9f)
                 .addExpires(0.2)
-                .addTween(0.004, 0.4, -3, false, true))
+                .addTween(0.003, 0.3, -3, false, true))
 
         def createParticle():Entity*
             return (
-                createEntity("particlebang", Kind.PARTICLE, "star.png")
+                createEntity("particlebang", Kind.PARTICLE, "star")
                 .addTint(0xd2, 0xfa, 0xd2, 0xfa)
                 .addExpires(0.75)
                 .addVelocity(0, 0))
@@ -145,7 +145,7 @@ namespace demo
             if world.cache[Kind.BULLET].is_empty 
                 for var i=1 to 10 do world.cache[Kind.BULLET].add(createBullet())
             var entity = world.cache[Kind.BULLET].remove_at(0)
-            game.addSprite(entity
+            listener.entityAdded(entity
                 .setPos(x, y)
                 .setExpires(1.0)
                 .setActive(true))
@@ -155,7 +155,7 @@ namespace demo
                 for var i=1 to 10 do world.cache[Kind.ENEMY1].add(createEnemy1())
 
             var entity = world.cache[Kind.ENEMY1].remove_at(0)
-            game.addSprite(entity
+            listener.entityAdded(entity
                 .setPos(x, y)
                 .setHealth(10, 10)
                 .setActive(true))
@@ -165,7 +165,7 @@ namespace demo
                 for var i=1 to 10 do world.cache[Kind.ENEMY2].add(createEnemy2())
 
             var entity = world.cache[Kind.ENEMY2].remove_at(0)
-            game.addSprite(entity
+            listener.entityAdded(entity
                 .setPos(x, y)
                 .setHealth(20, 20) 
                 .setActive(true))
@@ -175,7 +175,7 @@ namespace demo
                 for var i=1 to 10 do world.cache[Kind.ENEMY3].add(createEnemy3())
 
             var entity = world.cache[Kind.ENEMY3].remove_at(0)
-            game.addSprite(entity
+            listener.entityAdded(entity
                 .setPos(x, y)
                 .setHealth(60, 60)
                 .setActive(true))
@@ -185,7 +185,7 @@ namespace demo
                 for var i=1 to 10 do world.cache[Kind.EXPLOSION].add(createExplosion())
 
             var entity = world.cache[Kind.EXPLOSION].remove_at(0)
-            game.addSprite(entity
+            listener.entityAdded(entity
                 .setBounds(x, y, (int)entity.bounds.w, (int)entity.bounds.h)
                 .setTween(0.006, 0.6, -3, false, true)
                 .setPos(x, y)
@@ -198,11 +198,11 @@ namespace demo
                 for var i=1 to 10 do world.cache[Kind.BANG].add(createBang())
 
             var entity = world.cache[Kind.BANG].remove_at(0)
-            game.addSprite(entity
+            listener.entityAdded(entity
                 .setBounds(x, y, (int)entity.bounds.w, (int)entity.bounds.h)
-                .setTween(0.006, 0.4, -3, false, true)
+                .setTween(0.003, 0.3, -3, false, true)
                 .setPos(x, y)
-                .setScale(0.4, 0.4)
+                .setScale(0.3, 0.3)
                 .setExpires(0.2)
                 .setActive(true))
 
@@ -217,50 +217,11 @@ namespace demo
             var velocityY = magnitude * Math.sin(radians)
             var scale = rand.double_range(0.1, 1.0)
 
-            game.addSprite(entity
+            listener.entityAdded(entity
                 .setBounds(x, y, (int)entity.bounds.w, (int)entity.bounds.h)
                 .setPos(x, y)
                 .setScale(scale, scale)
                 .setVelocity(velocityX, velocityY)
                 .setExpires(0.75)
                 .setActive(true))
-
-
-        /**
-        * getSurface
-        *
-        * get image resource from gio resource compiler 
-        *
-        * @param resource name
-        * @return surface
-        */
-        def getSurface(name:string):Surface 
-
-            var ptr = GLib.resources_lookup_data(@"$URI/images/$name", 0)
-            if (ptr == null) 
-                logSDLError(@"load resource: $URI/images/$name")
-                return null
-            else 
-                var raw = new SDL.RWops.from_mem((void*)ptr.get_data(), (int)ptr.get_size())
-                return SDLImage.load_png(raw)
-
-
-        /**
-        * getChunk
-        *
-        * get sound resource from gio resource compiler 
-        *
-        * @param resource name
-        * @return chunk
-        */
-        def getChunk(name:string):Chunk
-            var ptr = GLib.resources_lookup_data(@"$URI/sounds/$name", 0)
-            if (ptr == null) 
-                logSDLError(@"load resource: $URI/sounds/$name")
-                return null
-            else 
-                var raw = new SDL.RWops.from_mem((void*)ptr.get_data(), (int)ptr.get_size())
-                return new SDLMixer.Chunk.WAV_RW(raw)
-
-
 

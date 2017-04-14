@@ -8,10 +8,10 @@ namespace demo
     class RemoveSystem : Object implements ISystem
 
         world:World
-        game:Game
+        game:Basic
         factory:Factory
 
-        construct(game:Game, factory:Factory)
+        construct(game:Basic, factory:Factory)
             this.game = game
             this.factory = factory
 

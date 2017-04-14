@@ -1,10 +1,7 @@
 node_modules
 resources.c
 resources.cc
-src/sdx
-src/o2d
-src/entitas
-src/app
+sdx/
 *~
 *.AppImage
 install/

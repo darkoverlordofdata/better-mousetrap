@@ -1,8 +1,4 @@
 [indent=4]
-uses SDL
-uses SDL.Video
-uses SDLMixer
-
 namespace demo
 
     delegate FactoryFunc():Entity*
@@ -15,12 +11,11 @@ namespace demo
         def abstract setWorld(world:World)
         def abstract execute()
 
-    interface IEntityRemoved : Object
+    interface EntityRemovedListener : Object
         def abstract entityRemoved(e:Entity*)
 
-    interface ISpriteManager: Object
-        def abstract addSprite(e:Entity*)
-        def abstract createTexture(surface:SDL.Video.Surface):SDL.Video.Texture
+    interface EntityAddedListener : Object
+        def abstract entityAdded(e:Entity*)
 
     class World
 
@@ -28,11 +23,8 @@ namespace demo
         cache       : array of list of Entity* 
         systems     : list of ISystem = new list of ISystem
         entity      : list of Entity* = new list of Entity*
-        listener    : IEntityRemoved
+        listener    : EntityRemovedListener
         id          : private int = 0
-
-        construct(listener:IEntityRemoved)
-            setEntityRemovedListener((IEntityRemoved)listener)
 
         def setPool(size:int, config: array of Config)
             pool = new array of Entity[size]
@@ -43,7 +35,7 @@ namespace demo
                     cache[config[i].kind].add(config[i].alloc())
         
 
-        def setEntityRemovedListener(listener:IEntityRemoved)
+        def setEntityRemovedListener(listener:EntityRemovedListener)
             this.listener = listener
 
         def createEntity():Entity*

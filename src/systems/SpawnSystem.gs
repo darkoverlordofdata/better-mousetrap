@@ -8,13 +8,13 @@ namespace demo
     class SpawnSystem : Object implements ISystem
 
         world:World
-        game:Game
+        game:Basic
         factory:Factory
         enemyT1     : double = 1.0
         enemyT2     : double = 4.0
         enemyT3     : double = 6.0
 
-        construct(game:Game, factory:Factory)
+        construct(game:Basic, factory:Factory)
             this.game = game
             this.factory = factory
 

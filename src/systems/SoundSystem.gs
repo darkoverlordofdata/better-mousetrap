@@ -8,10 +8,10 @@ namespace demo
     class SoundSystem : Object implements ISystem
 
         world:World
-        game:Game
+        game:Basic
         factory:Factory
 
-        construct(game:Game, factory:Factory)
+        construct(game:Basic, factory:Factory)
             this.game = game
             this.factory = factory
 
@@ -22,7 +22,7 @@ namespace demo
             for var entity in world.entity do executeEach(ref entity)
         
         def executeEach(ref entity:Entity*)
-            if entity.active && entity.sound != null
-                SDLMixer.play(-1, entity.sound.effect, 0)
-
+            // if entity.active && entity.sound != null
+            //     SDLMixer.play(-1, entity.sound.effect, 0)
+            pass
 
