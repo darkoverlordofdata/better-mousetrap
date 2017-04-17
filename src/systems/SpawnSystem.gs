@@ -1,20 +1,19 @@
 [indent=4]
-uses SDL
-uses SDL.Video
-uses SDLImage
+uses entitas
+uses sdx
 
 namespace demo
 
     class SpawnSystem : Object implements ISystem
 
         world:World
-        game:Basic
+        game:ShmupWarz
         factory:Factory
         enemyT1     : double = 1.0
         enemyT2     : double = 4.0
         enemyT3     : double = 6.0
 
-        construct(game:Basic, factory:Factory)
+        construct(game:ShmupWarz, factory:Factory)
             this.game = game
             this.factory = factory
 

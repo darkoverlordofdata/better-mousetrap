@@ -1,16 +1,13 @@
 [indent=4]
+uses entitas
 uses sdx
-
-uses SDL
-uses SDL.Video
-uses SDLImage
 
 namespace demo
 
     class InputSystem : Object implements ISystem, InputProcessor
 
         world:World
-        game:Basic
+        game:ShmupWarz
         factory:Factory
         player      : Entity*
         FireRate    : double = 0.1
@@ -20,7 +17,7 @@ namespace demo
         mouseY      : int
         scale       : double = 1.0
 
-        construct(game:Basic, factory:Factory)
+        construct(game:ShmupWarz, factory:Factory)
             this.game = game
             this.factory = factory
             Sdx.input.setInputProcessor(this)

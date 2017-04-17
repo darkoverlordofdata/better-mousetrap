@@ -1,7 +1,6 @@
 [indent=4]
-uses SDL
-uses SDL.Video
-uses SDLImage
+uses entitas
+uses sdx
 uses sdx.graphics.s2d
 
 namespace demo
@@ -9,10 +8,10 @@ namespace demo
     class SpriteManagerSystem : Object implements ISystem, EntityAddedListener, EntityRemovedListener
 
         world:World
-        game:Basic
+        game:ShmupWarz
         factory:Factory
 
-        construct(game:Basic, factory:Factory)
+        construct(game:ShmupWarz, factory:Factory)
             this.game = game
             this.factory = factory
             factory.setEntityAddedListener(this)
@@ -25,8 +24,8 @@ namespace demo
             pass
             
         def entityAdded(e:Entity*)
-            var rank = (int)e.kind
-            e.sprite.texture.layer = rank
+            var zOrder = (int)e.zOrder
+            e.sprite.layer = zOrder
             
             if game.views.size == 0
                 game.views.add(e)
@@ -35,7 +34,7 @@ namespace demo
                 var i = 0
                 for s in game.views
                     assert(s != null)
-                    if rank <= (int)s.kind
+                    if zOrder <= (int)s.zOrder
                         game.views.insert(i, e)
                         return
                     else

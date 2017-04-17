@@ -1,31 +1,29 @@
 [indent=4]
-uses SDL
-uses SDL.Video
-uses SDLImage
+uses entitas
+uses sdx
 
 namespace demo
 
     class PhysicsSystem : Object implements ISystem
 
         world:World
-        game:Basic
+        game:ShmupWarz
         factory:Factory
+        group:Group
 
-        construct(game:Basic, factory:Factory)
+        construct(game:ShmupWarz, factory:Factory)
             this.game = game
             this.factory = factory
 
 
         def setWorld(world:World)
-            this.world = world
+            group = world.getGroup(Matcher.AllOf({Components.VelocityComponent}))
 
         def execute()
-            for var entity in world.entity do executeEach(ref entity)
-        
-        def executeEach(ref entity:Entity*)
-            if entity.active && entity.hasVelocity()
-                entity.pos = entity.pos.add(entity.velocity.mul(game.delta))
-                // entity.pos.x += entity.velocity.x * game.delta
-                // entity.pos.y += entity.velocity.y * game.delta
+            for var entity in group.entities 
+                if entity.active 
+                    entity.pos = entity.pos.add(entity.velocity.mul(game.delta))
+                    // entity.pos.x += entity.velocity.x * game.delta
+                    // entity.pos.y += entity.velocity.y * game.delta
 
 

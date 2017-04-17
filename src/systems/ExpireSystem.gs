@@ -1,28 +1,27 @@
 [indent=4]
-uses SDL
-uses SDL.Video
-uses SDLImage
+uses entitas
+uses sdx
 
 namespace demo
 
     class ExpireSystem : Object implements ISystem
 
         world:World
-        game:Basic
+        game:ShmupWarz
         factory:Factory
+        group:Group
 
-        construct(game:Basic, factory:Factory)
+        construct(game:ShmupWarz, factory:Factory)
             this.game = game
             this.factory = factory
 
         def setWorld(world:World)
             this.world = world
+            group = world.getGroup(Matcher.AllOf({Components.ExpiresComponent}))
 
         def execute()
-            for var entity in world.entity do executeEach(ref entity)
-
-        def executeEach(ref entity:Entity*)
-            if entity.active && entity.hasExpires()
-                var exp = entity.expires.timer - game.delta
-                entity.expires.timer = exp
-                if (entity.expires.timer < 0) do world.deleteEntity(entity)
+            for var entity in group.entities
+                if entity.active
+                    var exp = entity.expires.timer - game.delta
+                    entity.expires.timer = exp
+                    if (entity.expires.timer < 0) do world.deleteEntity(entity)

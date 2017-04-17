@@ -79,7 +79,7 @@
         // "sdx/utils/viewport/Viewport.gs",
         "src/o2d.c",
         "src/resources.c",
-        "src/world.gs",
+        "src/entitas.gs",
         "src/entities.gs",
         "src/components.gs",
         "src/systems/CollisionSystem.gs",
@@ -91,6 +91,7 @@
         "src/systems/SpawnSystem.gs",
         "src/systems/SpriteManagerSystem.gs",
         "src/systems/TweenSystem.gs",
+        "src/shmupwarz.gs",
         "src/main.gs"
     ],
     "showOutput": "always"

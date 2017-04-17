@@ -1,40 +1,45 @@
 [indent=4]
-uses SDL
-uses SDL.Video
-uses SDLImage
+uses entitas
+uses sdx
 
 namespace demo
 
     class CollisionSystem : Object implements ISystem
 
         world:World
-        game:Basic
+        game:ShmupWarz
         factory:Factory
+        bullets:Group
+        enemies:Group
 
-        construct(game:Basic, factory:Factory)
+        construct(game:ShmupWarz, factory:Factory)
             this.game = game
             this.factory = factory
 
         def setWorld(world:World)
             this.world = world
+            bullets = world.getGroup(Matcher.AllOf({Components.BulletComponent}))
+            enemies = world.getGroup(Matcher.AllOf({Components.EnemyComponent}))
 
         def execute()
-            for var e in world.entity do executeEach(ref e)
-        
-        def executeEach(ref entity:Entity*)
-            if entity.active && (entity.kind == Kind.ENEMY1 || entity.kind == Kind.ENEMY2 || entity.kind == Kind.ENEMY3)
-                for var bullet in world.entity
-                    if bullet.active && bullet.kind == Kind.BULLET
-                        if entity.bounds.is_intersecting(bullet.bounds)
-                            if entity.active && bullet.active
-                                handleCollision(ref entity, ref bullet)
-                            return
+            for var enemy in enemies.entities
+                if enemy.active
+                    for var bullet in bullets.entities
+                        if bullet.active
+                            if enemy.bounds.is_intersecting(bullet.bounds)
+                                if enemy.active && bullet.active
+                                    handleCollision(ref enemy, ref bullet)
+                                return
+
 
 
         def handleCollision(ref a:Entity*, ref b:Entity*)
-            factory.newBang(b.bounds.x, b.bounds.y)
+            var x = (int)((double)b.pos.x - b.bounds.w / 2)
+            var y = (int)((double)b.pos.y - b.bounds.h / 2)
+            factory.newBang(x, y)
             world.deleteEntity(b)
-            for var i=0 to 3 do factory.newParticle(b.bounds.x, b.bounds.y)
+            for var i=0 to 3
+                factory.newParticle(x, y)
             if a.health != null
                 var h = a.health.current - 2
                 if (h < 0) 
