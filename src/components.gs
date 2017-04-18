@@ -81,7 +81,7 @@ namespace entitas
 
     [SimpleType]
     struct IsA 
-        entity  : bool
+        value   : bool
 
     [SimpleType]
     struct Tween 
@@ -91,7 +91,18 @@ namespace entitas
         repeat  : bool
         active  : bool
 
-
+    struct Core 
+                                        /* Core component: */  
+        id          : int               /* sequentially assigned id# */
+        name        : string            /* display name */
+        active      : bool              /* active=true inactive=false*/
+        pool        : int               /* pool entities by type */
+        pos         : Point2d           /* display at cartesian coords */
+        layer       : int               /* display at layer (zOrder) */
+        bounds      : SDL.Video.Rect    /* current screen location  */
+        scale       : Vector2d          /* display scale */
+        sprite      : Sprite            /* graphic display object */
+    
 
     struct Entity 
                                         /* Core component: */  
@@ -99,14 +110,12 @@ namespace entitas
         name        : string            /* display name */
         active      : bool              /* active=true inactive=false*/
         pool        : int               /* pool entities by type */
-        pos         : Point2d           /* display at cartesian location */
+        pos         : Point2d           /* display at cartesian coords */
         layer       : int               /* display at layer (zOrder) */
         bounds      : SDL.Video.Rect    /* current screen location  */
         scale       : Vector2d          /* display scale */
         sprite      : Sprite            /* graphic display object */
-                                        /* user defined components:  */
-
-        donotuse    : bool              /* has[0] - unused */
+                                        /* optional component flags */
         has         : bool[1]           /* has component flags */
         hasBullet   : bool              /* has[1] */
         hasEnemy    : bool              /* has[2] */
@@ -116,7 +125,7 @@ namespace entitas
         hasTint     : bool              /* has[6] */
         hasTween    : bool              /* has[7] */
         hasVelocity : bool              /* has[8] */
-        
+                                        /* optional components */
         bullet      : IsA?              /* isBullet == true? */
         enemy       : IsA?              /* isEnemy == true? */
         expires     : Duration?         /* count of ms until timeout */
@@ -127,17 +136,19 @@ namespace entitas
         velocity    : Vector2d?         /* speed */
 
         def hasComponent(index : int) : bool
+            if index < 1 || index> 8 do return true
             return has[index]
 
         def hasComponents(indices : array of int) : bool
-            for var index in indices do if !has[index] do return false
+            for var index in indices do if index < 1 || index > 8 || !has[index] do return false
             return true
 
         def hasAnyComponent(indices : array of int) : bool
-            for var index in indices do if has[index] do return true
+            for var index in indices do if index >= 1 && index <= 8 && has[index] do return true
             return false
 
         /* core component */
+        /* can't add or remove core components */
 
         def setId(id:int):Entity*
             this.id = id
@@ -213,19 +224,19 @@ namespace entitas
             else do return true
 
         def addSound(sound:sdx.audio.Sound):Entity*
-            if hasSound do raise new Exception.EntityAlreadyHasComponent("effect")
+            if hasSound do raise new Exception.EntityAlreadyHasComponent("sound")
             this.sound = sound
             hasSound = true
             World.onComponentAdded(&this, Components.SoundComponent)
             return &this
 
         def setSound(sound:sdx.audio.Sound):Entity*
-            if !hasSound do raise new Exception.EntityDoesNotHaveComponent("effect")
+            if !hasSound do raise new Exception.EntityDoesNotHaveComponent("sound")
             this.sound = sound
             return &this
 
         def removeSound():Entity*
-            if !hasSound do raise new Exception.EntityDoesNotHaveComponent("effect")
+            if !hasSound do raise new Exception.EntityDoesNotHaveComponent("sound")
             this.sound = null
             hasSound = false
             World.onComponentRemoved(&this, Components.SoundComponent)
