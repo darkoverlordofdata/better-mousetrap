@@ -1,33 +1,37 @@
 [indent=4]
-uses SDL
-uses SDL.Video
-uses SDLImage
+uses entitas
+uses sdx
 
+namespace demo
 
-class RemoveSystem : Object implements ISystem
+    class RemoveSystem : Object implements ISystem
 
-    game:Game
-    factory:Factory
+        world:World
+        game:ShmupWarz
+        factory:Factory
+        group:Group
 
-    construct(game:Game, factory:Factory)
-        this.game = game
-        this.factory = factory
+        construct(game:ShmupWarz, factory:Factory)
+            this.game = game
+            this.factory = factory
 
-    def execute()
-        for var entity in game.entity do executeEach(ref entity)
+        def setWorld(world:World)
+            this.world = world
+            group = world.getGroup(Matcher.AllOf({Components.VelocityComponent}))
 
-    def executeEach(ref entity:Entity*)
-        if entity.active
-            case entity.kind
-                when Kind.ENEMY1
-                    if entity.pos.y > game.height do factory.killEntity(entity)
-                    
-                when Kind.ENEMY2
-                    if entity.pos.y > game.height do factory.killEntity(entity)
-                    
-                when Kind.ENEMY3
-                    if entity.pos.y > game.height do factory.killEntity(entity)
-                    
-                when Kind.BULLET
-                    if entity.pos.y < 0 do factory.killEntity(entity)
+        def execute()
+            for var entity in group.entities 
+                if entity.active
+                    case entity.pool
+                        when Pool.ENEMY1
+                            if entity.pos.y > game.height do world.deleteEntity(entity)
+                            
+                        when Pool.ENEMY2
+                            if entity.pos.y > game.height do world.deleteEntity(entity)
+                            
+                        when Pool.ENEMY3
+                            if entity.pos.y > game.height do world.deleteEntity(entity)
+                            
+                        when Pool.BULLET
+                            if entity.pos.y < 0 do world.deleteEntity(entity)
 

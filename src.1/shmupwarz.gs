@@ -1,24 +1,18 @@
 [indent=4]
+uses entitas
 uses sdx
 uses sdx.graphics.s2d
 
-const URI : string = "/darkoverlordofdata/shmupwarz"
-
-def main(args: array of string)
-    var game = new demo.Basic(840, 720, @"resource://$URI")
-    game.run()
-
-
 namespace demo
 
-    class Basic : sdx.Application implements ApplicationListener
-        delta       : double 
+    class ShmupWarz : sdx.Application implements ApplicationListener
         k           : int
         t           : double
-        profile     : bool = true
         t1          : double = 0.0
         t2          : double = 0.0
         t3          : double = 0.0
+        profile     : bool = true
+        delta       : double 
         factory     : Factory
         world       : World
         views       : list of Entity* = new list of Entity*
@@ -28,7 +22,6 @@ namespace demo
             defaultFont = "fonts/OpenDyslexic-Bold.otf"
             setApplicationListener(this)
             
-
         def create()
             world = new World()
             factory = new Factory(world)
@@ -43,7 +36,6 @@ namespace demo
                 )
             factory.createBackground()
                 
-
         def render()
             delta = Sdx.graphics.deltaTime
             if profile do t1 = (double)GLib.get_real_time()/1000000.0
@@ -62,13 +54,13 @@ namespace demo
         def override draw()
             renderer.set_draw_color(0x0, 0x0, 0x0, 0x00)
             renderer.clear()
-            for var e in views do if e.active do drawSprite(ref e)
+            for var e in views do if e.active do drawEach(ref e)
             renderer.present()
 
-        def private drawSprite(ref e:Entity*)
+        def private drawEach(ref e:Entity*)
             e.bounds.w = (int)((double)e.sprite.width * e.scale.x)
             e.bounds.h = (int)((double)e.sprite.height * e.scale.y)
-            if (e.kind != Kind.BACKGROUND) 
+            if (e.pool != Pool.BACKGROUND) 
                 e.bounds.x = (int)((double)e.pos.x - e.bounds.w / 2)
                 e.bounds.y = (int)((double)e.pos.y - e.bounds.h / 2)
                 if e.tint != null
@@ -76,8 +68,7 @@ namespace demo
                     e.sprite.texture.set_alpha_mod((uint8)e.tint.a)
                 
             renderer.copy(e.sprite.texture, null, e.bounds)
-            
-            
+
         def dispose()
             pass
         def pause()

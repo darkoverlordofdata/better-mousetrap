@@ -21,10 +21,7 @@ namespace demo
 
         def execute()
             for var entity in group.entities 
-            // for var entity in world.entity do executeEach(ref entity)
-
-            // def executeEach(ref entity:Entity*)
-                if entity.active && entity.hasTween()
+                if entity.active 
                     var x = entity.scale.x + (entity.tween.speed * game.delta)
                     var y = entity.scale.y + (entity.tween.speed * game.delta)
                     var active = entity.tween.active

@@ -24,24 +24,24 @@ namespace demo
             pass
             
         def entityAdded(e:Entity*)
-            var zOrder = (int)e.zOrder
-            e.sprite.layer = zOrder
+            var layer = (int)e.layer
+            e.sprite.layer = layer
             
-            if game.views.size == 0
-                game.views.add(e)
+            if game.sprites.size == 0
+                game.sprites.add(e)
 
             else
                 var i = 0
-                for s in game.views
+                for s in game.sprites
                     assert(s != null)
-                    if zOrder <= (int)s.zOrder
-                        game.views.insert(i, e)
+                    if layer <= (int)s.layer
+                        game.sprites.insert(i, e)
                         return
                     else
                         i++
-                game.views.add(e)
+                game.sprites.add(e)
 
 
         def entityRemoved(e:Entity*)
-            game.views.remove(e)
+            game.sprites.remove(e)
 

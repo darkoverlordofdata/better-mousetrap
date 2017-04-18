@@ -9,29 +9,28 @@ namespace entitas
 
     enum Components
         CoreComponent
-        SoundComponent
-        TintComponent
-        ExpiresComponent
-        HealthComponent
-        TweenComponent
-        VelocityComponent
         BulletComponent
         EnemyComponent
-        ComponentCount
+        ExpiresComponent
+        HealthComponent
+        SoundComponent
+        TintComponent
+        TweenComponent
+        VelocityComponent
 
 
     const ComponentString:array of string = {
         "CoreComponent",
-        "SoundComponent",
-        "TintComponent",
-        "ExpiresComponent",
-        "HealthComponent",
-        "TweenComponent",
-        "VelocityComponent",
         "BulletComponent",
         "EnemyComponent",
-        "ComponentCount"
+        "ExpiresComponent",
+        "HealthComponent",
+        "SoundComponent",
+        "TintComponent",
+        "TweenComponent",
+        "VelocityComponent"
     }
+
 
 
     [SimpleType]
@@ -41,6 +40,7 @@ namespace entitas
 
         def add(v:Vector2d):Point2d
             return { x+v.x, y+v.y }
+
         def sub(v:Vector2d):Point2d
             return { x-v.x, y-v.y }
 
@@ -51,8 +51,10 @@ namespace entitas
 
         def mul(f:double):Vector2d
             return { x*f, y*f }
+
         def div(f:double):Vector2d
             return { x/f, y/f }
+
         def len():double
             return Math.sqrt(x*x + y*y)
 
@@ -89,27 +91,43 @@ namespace entitas
         repeat  : bool
         active  : bool
 
+
+
     struct Entity 
-                                        /* Core component: */
+                                        /* Core component: */  
         id          : int               /* sequentially assigned id# */
         name        : string            /* display name */
         active      : bool              /* active=true inactive=false*/
         pool        : int               /* pool entities by type */
         pos         : Point2d           /* display at cartesian location */
-        zOrder      : int               /* display at zOrder*/
+        layer       : int               /* display at layer (zOrder) */
         bounds      : SDL.Video.Rect    /* current screen location  */
         scale       : Vector2d          /* display scale */
         sprite      : Sprite            /* graphic display object */
-        has         : bool[9]           /* has component flags */
-                                        /* user defined components: */
+                                        /* user defined components:  */
+
+        donotuse    : bool              /* has[0] - unused */
+        has         : bool[1]           /* has component flags */
+        hasBullet   : bool              /* has[1] */
+        hasEnemy    : bool              /* has[2] */
+        hasExpires  : bool              /* has[3] */
+        hasHealth   : bool              /* has[4] */
+        hasSound    : bool              /* has[5] */
+        hasTint     : bool              /* has[6] */
+        hasTween    : bool              /* has[7] */
+        hasVelocity : bool              /* has[8] */
+        
         bullet      : IsA?              /* isBullet == true? */
         enemy       : IsA?              /* isEnemy == true? */
-        sound       : Sound?            /* audio object */
-        tint        : Color?            /* rgba color struct */
         expires     : Duration?         /* count of ms until timeout */
         health      : Health?           /* scoring */
+        sound       : Sound?            /* audio object */
+        tint        : Color?            /* rgba color struct */
         tween       : Tween?            /* animation values */
         velocity    : Vector2d?         /* speed */
+
+        def hasComponent(index : int) : bool
+            return has[index]
 
         def hasComponents(indices : array of int) : bool
             for var index in indices do if !has[index] do return false
@@ -142,8 +160,8 @@ namespace entitas
             pos.y = y
             return &this
             
-        def setZOrder(z:int):Entity*
-            this.zOrder = z
+        def setLayer(z:int):Entity*
+            this.layer = z
             return &this
             
         def setBounds(x:int, y:int, w:int, h:int):Entity*
@@ -167,11 +185,11 @@ namespace entitas
         def setBullet(value:bool):Entity*
             if value
                 this.bullet = { true }
-                this.has[Components.BulletComponent] = true
+                hasBullet = true
                 World.onComponentAdded(&this, Components.BulletComponent)
             else
                 this.bullet = null
-                this.has[Components.BulletComponent] = false
+                hasBullet = false
                 World.onComponentRemoved(&this, Components.BulletComponent)
             return &this
 
@@ -182,11 +200,11 @@ namespace entitas
         def setEnemy(value:bool):Entity*
             if value
                 this.enemy = { true }
-                this.has[Components.EnemyComponent] = true
+                hasEnemy = true
                 World.onComponentAdded(&this, Components.EnemyComponent)
             else
                 this.enemy = null
-                this.has[Components.EnemyComponent] = false
+                hasEnemy = false
                 World.onComponentRemoved(&this, Components.EnemyComponent)
             return &this
 
@@ -194,40 +212,34 @@ namespace entitas
             if this.enemy == null do return false
             else do return true
 
-        def hasSound():bool
-             return sound != null
-
         def addSound(sound:sdx.audio.Sound):Entity*
-            if this.sound != null do raise new Exception.EntityAlreadyHasComponent("effect")
+            if hasSound do raise new Exception.EntityAlreadyHasComponent("effect")
             this.sound = sound
-            this.has[Components.SoundComponent] = true
+            hasSound = true
             World.onComponentAdded(&this, Components.SoundComponent)
             return &this
 
         def setSound(sound:sdx.audio.Sound):Entity*
-            if this.sound == null do raise new Exception.EntityDoesNotHaveComponent("effect")
+            if !hasSound do raise new Exception.EntityDoesNotHaveComponent("effect")
             this.sound = sound
             return &this
 
         def removeSound():Entity*
-            if this.sound == null do raise new Exception.EntityDoesNotHaveComponent("effect")
+            if !hasSound do raise new Exception.EntityDoesNotHaveComponent("effect")
             this.sound = null
-            this.has[Components.SoundComponent] = false
+            hasSound = false
             World.onComponentRemoved(&this, Components.SoundComponent)
             return &this
 
-        def hasTint():bool
-             return tint != null
-
         def addTint(r:int, g:int, b:int, a:int):Entity*
-            if tint != null do raise new Exception.EntityAlreadyHasComponent("tint")
+            if hasTint do raise new Exception.EntityAlreadyHasComponent("tint")
             this.tint = { r, g, b, a }
-            this.has[Components.TintComponent] = true
+            hasTint = true
             World.onComponentAdded(&this, Components.TintComponent)
             return &this
             
         def setTint(r:int, g:int, b:int, a:int):Entity*
-            if tint == null do raise new Exception.EntityDoesNotHaveComponent("tint")
+            if !hasTint do raise new Exception.EntityDoesNotHaveComponent("tint")
             this.tint.r = r
             this.tint.g = g
             this.tint.b = b
@@ -235,69 +247,60 @@ namespace entitas
             return &this
             
         def removeTint():Entity*
-            if this.tint == null do raise new Exception.EntityDoesNotHaveComponent("tint")
+            if !hasTint do raise new Exception.EntityDoesNotHaveComponent("tint")
             this.tint = null
-            this.has[Components.TintComponent] = false
+            hasTint = false
             World.onComponentRemoved(&this, Components.TintComponent)
             return &this
 
-        def hasExpires():bool
-             return expires != null
-            
         def addExpires(timer:double):Entity*
-            if expires != null do raise new Exception.EntityAlreadyHasComponent("expires")
+            if hasExpires do raise new Exception.EntityAlreadyHasComponent("expires")
             this.expires = { timer }
-            this.has[Components.ExpiresComponent] = true
+            hasExpires = true
             World.onComponentAdded(&this, Components.ExpiresComponent)
             return &this
 
         def setExpires(timer:double):Entity*
-            if expires == null do raise new Exception.EntityDoesNotHaveComponent("expires")
+            if !hasExpires do raise new Exception.EntityDoesNotHaveComponent("expires")
             this.expires.timer = timer
             return &this
 
         def removeExpires():Entity*
-            if this.expires == null do raise new Exception.EntityDoesNotHaveComponent("expires")
+            if !hasExpires do raise new Exception.EntityDoesNotHaveComponent("expires")
             this.expires = null
-            this.has[Components.ExpiresComponent] = false
+            hasExpires = false
             World.onComponentRemoved(&this, Components.ExpiresComponent)
             return &this
 
-        def hasHealth():bool
-             return health != null
-            
         def addHealth(current:int, maximum:int):Entity*
-            if health != null do raise new Exception.EntityAlreadyHasComponent("health")
+            if hasHealth do raise new Exception.EntityAlreadyHasComponent("health")
             this.health = { current, maximum }
-            this.has[Components.HealthComponent] = true
+            hasHealth = true
             World.onComponentAdded(&this, Components.HealthComponent)
             return &this
 
         def setHealth(current:int, maximum:int):Entity*
-            if health == null do raise new Exception.EntityDoesNotHaveComponent("health")
+            if !hasHealth do raise new Exception.EntityDoesNotHaveComponent("health")
             this.health.current = current
             this.health.maximum = maximum
             return &this
 
         def removeHealth():Entity*
-            if this.health == null do raise new Exception.EntityDoesNotHaveComponent("health")
+            if !hasHealth do raise new Exception.EntityDoesNotHaveComponent("health")
             this.health = null
-            this.has[Components.HealthComponent] = false
+            hasHealth = false
             World.onComponentRemoved(&this, Components.HealthComponent)
             return &this
 
-        def hasTween():bool
-             return tween != null
-            
         def addTween(min:double, max:double, speed:double, repeat:bool, active:bool):Entity*
-            if tween != null do raise new Exception.EntityAlreadyHasComponent("tween")
+            if hasTween do raise new Exception.EntityAlreadyHasComponent("tween")
             this.tween = { min, max, speed, repeat, active }
-            this.has[Components.TweenComponent] = true
+            hasTween = true
             World.onComponentAdded(&this, Components.TweenComponent)
             return &this
 
         def setTween(min:double, max:double, speed:double, repeat:bool, active:bool):Entity*
-            if tween == null do raise new Exception.EntityDoesNotHaveComponent("tween")
+            if !hasTween do raise new Exception.EntityDoesNotHaveComponent("tween")
             this.tween.min = min
             this.tween.max = max
             this.tween.speed = speed
@@ -306,32 +309,29 @@ namespace entitas
             return &this
 
         def removeTween():Entity*
-            if this.tween == null do raise new Exception.EntityDoesNotHaveComponent("tween")
+            if !hasTween do raise new Exception.EntityDoesNotHaveComponent("tween")
             this.tween = null
-            this.has[Components.TweenComponent] = false
+            hasTween = false
             World.onComponentRemoved(&this, Components.TweenComponent)
             return &this
 
-        def hasVelocity():bool
-             return velocity != null
-            
         def addVelocity(x:double, y:double):Entity*
-            if velocity != null do raise new Exception.EntityAlreadyHasComponent("velocity")
+            if hasVelocity do raise new Exception.EntityAlreadyHasComponent("velocity")
             this.velocity = { x, y }
-            this.has[Components.VelocityComponent] = true
+            hasVelocity = true
             World.onComponentAdded(&this, Components.VelocityComponent)
             return &this
 
         def setVelocity(x:double, y:double):Entity*
-            if velocity == null do raise new Exception.EntityDoesNotHaveComponent("velocity")
+            if !hasVelocity do raise new Exception.EntityDoesNotHaveComponent("velocity")
             this.velocity.x = x
             this.velocity.y = y
             return &this
 
         def removeVelocity():Entity*
-            if this.velocity == null do raise new Exception.EntityDoesNotHaveComponent("velocity")
+            if !hasVelocity do raise new Exception.EntityDoesNotHaveComponent("velocity")
             this.velocity = null
-            this.has[Components.VelocityComponent] = false
+            hasVelocity = false
             World.onComponentRemoved(&this, Components.VelocityComponent)
             return &this
 

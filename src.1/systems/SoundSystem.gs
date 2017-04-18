@@ -1,23 +1,30 @@
 [indent=4]
-uses SDL
-uses SDL.Video
-uses SDLImage
+uses entitas
+uses sdx
 
+namespace demo
 
-class SoundSystem : Object implements ISystem
+    class SoundSystem : Object implements ISystem
 
-    game:Game
-    factory:Factory
+        world:World
+        game:ShmupWarz
+        factory:Factory
+        group:Group
 
-    construct(game:Game, factory:Factory)
-        this.game = game
-        this.factory = factory
+        construct(game:ShmupWarz, factory:Factory)
+            this.game = game
+            this.factory = factory
 
-    def execute()
-        for var entity in game.entity do executeEach(ref entity)
-    
-    def executeEach(ref entity:Entity*)
-        if entity.active && entity.sound != null
-            SDLMixer.play(-1, entity.sound.effect, 0)
+        def setWorld(world:World)
+            this.world = world
+            group = world.getGroup(Matcher.AllOf({Components.SoundComponent}))
 
+        def execute()
+            for var entity in group.entities 
+            // for var entity in world.entity do executeEach(ref entity)
+        
+            // def executeEach(ref entity:Entity*)
+            // if entity.active && entity.sound != null
+            //     SDLMixer.play(-1, entity.sound, 0)
+            pass
 

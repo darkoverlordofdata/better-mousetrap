@@ -11,6 +11,9 @@ the data model ends up a lot like a database, with values stored in records.
 
 use entitas.json to describe this database and interface to it as raw memory, as though there were actual defined structs. Then the language of choice only needs to be able to call c. maybe can then be used in javascript or scala.
 
+Vala structs are filled with pitfals. Documentation is wrong. Private doesn't work. super-struct fails. Only a simple struct with all public fields works. I think the best way to deal with that 
+is to bury it far down where I don't have to touch it...
+
 ### Performance
 
 avg usec per frame after 10,000 frames:
@@ -38,8 +41,8 @@ avg usec per frame after 10,000 frames:
 
     after implementing Group/Matcher pattern
 
-    4566/75 = 60x
 
+    4566/53 = 86x
 
 
 vala is in the same performance spectrum as other high level languages. GObject isn't a major issue. prelmary testing showed cpp running more like fsharp when using object based data. 

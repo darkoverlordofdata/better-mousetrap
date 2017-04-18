@@ -19,6 +19,7 @@ namespace demo
         def setWorld(world:World)
             group = world.getGroup(Matcher.AllOf({Components.VelocityComponent}))
 
+
         def execute()
             for var entity in group.entities 
                 if entity.active 

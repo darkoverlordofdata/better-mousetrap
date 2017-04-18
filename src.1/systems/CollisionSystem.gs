@@ -1,41 +1,50 @@
 [indent=4]
-uses SDL
-uses SDL.Video
-uses SDLImage
+uses entitas
+uses sdx
+
+namespace demo
+
+    class CollisionSystem : Object implements ISystem
+
+        world:World
+        game:ShmupWarz
+        factory:Factory
+        bullets:Group
+        enemies:Group
+
+        construct(game:ShmupWarz, factory:Factory)
+            this.game = game
+            this.factory = factory
+
+        def setWorld(world:World)
+            this.world = world
+            bullets = world.getGroup(Matcher.AllOf({Components.BulletComponent}))
+            enemies = world.getGroup(Matcher.AllOf({Components.EnemyComponent}))
+
+        def execute()
+            for var enemy in enemies.entities
+                if enemy.active
+                    for var bullet in bullets.entities
+                        if bullet.active
+                            if enemy.bounds.is_intersecting(bullet.bounds)
+                                if enemy.active && bullet.active
+                                    handleCollision(ref enemy, ref bullet)
+                                return
 
 
-class CollisionSystem : Object implements ISystem
 
-    game:Game
-    factory:Factory
-
-    construct(game:Game, factory:Factory)
-        this.game = game
-        this.factory = factory
-
-    def execute()
-        for var e in game.entity do executeEach(ref e)
-    
-
-    def executeEach(ref entity:Entity*)
-        if entity.active && (entity.kind == Kind.ENEMY1 || entity.kind == Kind.ENEMY2 || entity.kind == Kind.ENEMY3)
-            for var bullet in game.entity
-                if bullet.active && bullet.kind == Kind.BULLET
-                    if entity.bounds.is_intersecting(bullet.bounds)
-                        if entity.active && bullet.active
-                            handleCollision(ref entity, ref bullet)
-                        return
-
-
-    def handleCollision(ref a:Entity*, ref b:Entity*)
-        factory.fireBang(b.bounds.x, b.bounds.y)
-        factory.killEntity(b)
-        for var i=0 to 3 do factory.fireParticle(b.bounds.x, b.bounds.y)
-        if a.health != null
-            var h = a.health.current - 2
-            if (h < 0) 
-                factory.fireExplosion((int)a.pos.x, (int)a.pos.y)
-                factory.killEntity(a)
-            else 
-                a.health = {h, a.health.maximum}
+        def handleCollision(ref a:Entity*, ref b:Entity*)
+            var x = (int)((double)b.pos.x - b.bounds.w / 2)
+            var y = (int)((double)b.pos.y - b.bounds.h / 2)
+            factory.newBang(x, y)
+            world.deleteEntity(b)
+            for var i=0 to 3
+                factory.newParticle(x, y)
+            if a.health != null
+                var h = a.health.current - 2
+                if (h < 0) 
+                    factory.newExplosion((int)a.pos.x, (int)a.pos.y)
+                    world.deleteEntity(a)
+                else 
+                    a.health = {h, a.health.maximum}
 

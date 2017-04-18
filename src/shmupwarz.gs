@@ -1,9 +1,11 @@
 [indent=4]
+uses Gee
 uses entitas
 uses sdx
 uses sdx.graphics.s2d
 
 namespace demo
+
 
     class ShmupWarz : sdx.Application implements ApplicationListener
         k           : int
@@ -11,11 +13,17 @@ namespace demo
         t1          : double = 0.0
         t2          : double = 0.0
         t3          : double = 0.0
+        zk           : int
+        zt           : double
+        zt1          : double = 0.0
+        zt2          : double = 0.0
+        zt3          : double = 0.0
         profile     : bool = true
         delta       : double 
         factory     : Factory
         world       : World
-        views       : list of Entity* = new list of Entity*
+        sprites     : list of Entity* = new list of Entity*
+        fpsSprite : private Sprite
 
         construct(width: int, height: int, base:string) 
             super(width, height, base)
@@ -27,6 +35,7 @@ namespace demo
             factory = new Factory(world)
             world.add(new SpriteManagerSystem(this, factory)
                 ).add(new SpawnSystem(this, factory)
+                // ).add(new SoundSystem(this, factory)
                 ).add(new CollisionSystem(this, factory)
                 ).add(new InputSystem(this, factory)
                 ).add(new PhysicsSystem(this, factory)
@@ -35,13 +44,15 @@ namespace demo
                 ).add(new RemoveSystem(this, factory)
                 )
             factory.createBackground()
+
                 
         def render()
+            var freq = SDL.Timer.get_performance_frequency()
             delta = Sdx.graphics.deltaTime
-            if profile do t1 = (double)GLib.get_real_time()/1000000.0
+            if profile do t1 = (double)SDL.Timer.get_performance_counter()/freq
             world.execute()
             if profile
-                t2 = (double)GLib.get_real_time()/1000000.0
+                t2 = (double)SDL.Timer.get_performance_counter()/freq
                 t3 = t2 - t1
                 t = t + t3
                 k += 1
@@ -51,23 +62,39 @@ namespace demo
                     print "%f", t
                     t = 0
 
+        /**
+         * draw
+         *
+         * vsync mode 
+         */
         def override draw()
-            renderer.set_draw_color(0x0, 0x0, 0x0, 0x00)
+            if showFps
+                if fpsSprite != null do fpsSprite = null
+                fpsSprite = new Sprite.text("%2.2f".printf(Sdx.graphics.fps), font, sdx.graphics.Color.AntiqueWhite)
+                fpsSprite.centered = false
+            renderer.set_draw_color(0, 0, 0, 0)
             renderer.clear()
-            for var e in views do if e.active do drawEach(ref e)
+            sprites.filter(_isActive).foreach(_drawEach)
+            if showFps && fpsSprite != null do fpsSprite.render(this.renderer, 0, 0)
             renderer.present()
 
-        def private drawEach(ref e:Entity*)
-            e.bounds.w = (int)((double)e.sprite.width * e.scale.x)
-            e.bounds.h = (int)((double)e.sprite.height * e.scale.y)
-            if (e.pool != Pool.BACKGROUND) 
-                e.bounds.x = (int)((double)e.pos.x - e.bounds.w / 2)
-                e.bounds.y = (int)((double)e.pos.y - e.bounds.h / 2)
-                if e.tint != null
-                    e.sprite.texture.set_color_mod((uint8)e.tint.r, (uint8)e.tint.g, (uint8)e.tint.b)
-                    e.sprite.texture.set_alpha_mod((uint8)e.tint.a)
+        def _isActive(e:Entity*):bool
+            return e->active
+
+        def _drawEach(e:Entity*):bool
+            e->bounds.w = (int)((double)e->sprite.width * e->scale.x)
+            e->bounds.h = (int)((double)e->sprite.height * e->scale.y)
+            if e->pool != Pool.BACKGROUND
+                e->bounds.x = (int)((double)e->pos.x - e->bounds.w / 2)
+                e->bounds.y = (int)((double)e->pos.y - e->bounds.h / 2)
+                // if e->tint != null
+                if e->hasTint
+                    e->sprite.texture.set_color_mod((uint8)e->tint.r, (uint8)e->tint.g, (uint8)e->tint.b)
+                    e->sprite.texture.set_alpha_mod((uint8)e->tint.a)
                 
-            renderer.copy(e.sprite.texture, null, e.bounds)
+            renderer.copy(e->sprite.texture, null, e->bounds)
+            return true
+
 
         def dispose()
             pass

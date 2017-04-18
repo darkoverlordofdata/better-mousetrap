@@ -19,6 +19,7 @@ namespace demo
             this.world = world
             group = world.getGroup(Matcher.AllOf({Components.ExpiresComponent}))
 
+
         def execute()
             for var entity in group.entities
                 if entity.active

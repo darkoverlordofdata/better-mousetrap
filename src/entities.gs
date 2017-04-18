@@ -38,13 +38,13 @@ namespace demo
             // _atlas = new TextureAtlas.file(file)
             
             world.setPool(256, Pool.Count, {
-                Config() { pool = Pool.BULLET,      size = 12,  factory = createBullet },
-                Config() { pool = Pool.ENEMY1,      size = 15,  factory = createEnemy1 },
-                Config() { pool = Pool.ENEMY2,      size = 5,   factory = createEnemy2 },
-                Config() { pool = Pool.ENEMY3,      size = 4,   factory = createEnemy3 },
-                Config() { pool = Pool.EXPLOSION,   size = 10,  factory = createExplosion },
-                Config() { pool = Pool.BANG,        size = 12,  factory = createBang },
-                Config() { pool = Pool.PARTICLE,    size = 100, factory = createParticle }
+                Buffer() { pool = Pool.BULLET,      size = 12,  factory = createBullet },
+                Buffer() { pool = Pool.ENEMY1,      size = 15,  factory = createEnemy1 },
+                Buffer() { pool = Pool.ENEMY2,      size = 5,   factory = createEnemy2 },
+                Buffer() { pool = Pool.ENEMY3,      size = 4,   factory = createEnemy3 },
+                Buffer() { pool = Pool.EXPLOSION,   size = 10,  factory = createExplosion },
+                Buffer() { pool = Pool.BANG,        size = 12,  factory = createBang },
+                Buffer() { pool = Pool.PARTICLE,    size = 100, factory = createParticle }
             })
 
 
@@ -70,7 +70,7 @@ namespace demo
                 .setActive(active)
                 .setPool(pool)
                 .setPos(0, 0)
-                .setZOrder(pool)
+                .setLayer(pool)
                 .setBounds(0, 0, sprite.width, sprite.height)
                 .setScale(scale, scale)
                 .setSprite(sprite))
@@ -96,7 +96,7 @@ namespace demo
         def createBullet():Entity*
             return (
                 createEntity("bullet", Pool.BULLET, "bullet")
-                //.addSound(getChunk("pew.wav"))
+                .addSound(new sdx.audio.Sound(Sdx.files.resource("sounds/pew.wav")))
                 .addTint(0xd2, 0xfa, 0, 0xfa)
                 .addExpires(1.0)
                 .addHealth(2, 2)
@@ -127,7 +127,7 @@ namespace demo
         def createExplosion():Entity*
             return (
                 createEntity("explosion", Pool.EXPLOSION, "explosion", 0.6)
-                //.addSound(getChunk("asplode.wav"))
+                .addSound(new sdx.audio.Sound(Sdx.files.resource("sounds/asplode.wav")))
                 .addTint(0xd2, 0xfa, 0xd2, 0x7f)
                 .addExpires(0.2)
                 .addTween(0.006, 0.6, -3, false, true))
@@ -135,7 +135,7 @@ namespace demo
         def createBang():Entity*
             return (
                 createEntity("bang", Pool.BANG, "explosion", 0.3)
-                //.addSound(getChunk("smallasplode.wav"))
+                .addSound(new sdx.audio.Sound(Sdx.files.resource("sounds/smallasplode.wav")))
                 .addTint(0xd2, 0xfa, 0xd2, 0x9f)
                 .addExpires(0.2)
                 .addTween(0.003, 0.3, -3, false, true))

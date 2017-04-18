@@ -1,26 +1,74 @@
 [indent=4]
-uses SDL
-uses SDL.Video
-uses SDLImage
+uses entitas
+uses sdx
 
+namespace demo
 
-class InputSystem : Object implements ISystem
+    class InputSystem : Object implements ISystem, InputProcessor
 
-    game:Game
-    factory:Factory
-    FireRate    : double = 0.1
-    timeToFire  : double = 0.0
+        world:World
+        game:ShmupWarz
+        factory:Factory
+        player      : Entity*
+        FireRate    : double = 0.1
+        timeToFire  : double = 0.0
+        shoot       : bool
+        mouseX      : int
+        mouseY      : int
+        scale       : double = 1.0
 
-    construct(game:Game, factory:Factory)
-        this.game = game
-        this.factory = factory
+        construct(game:ShmupWarz, factory:Factory)
+            this.game = game
+            this.factory = factory
+            Sdx.input.setInputProcessor(this)
 
-    def execute()
-        game.player.setPos(game.mouseX, game.mouseY)
-        if game.getKey(122) || game.mouseDown
-            timeToFire -= game.delta
+        def setWorld(world:World)
+            this.world = world
+            player = factory.createPlayer()
+
+        def execute()
+            player.setPos(mouseX, mouseY)
+            if shoot do timeToFire -= game.delta
             if timeToFire < 0.0
-                factory.fireBullet((int)game.player.pos.x - 27, (int)game.player.pos.y + 2)
-                factory.fireBullet((int)game.player.pos.x + 27, (int)game.player.pos.y + 2)
+                factory.newBullet((int)player.pos.x - 27, (int)player.pos.y + 2)
+                factory.newBullet((int)player.pos.x + 27, (int)player.pos.y + 2)
                 timeToFire = FireRate
+
+
+        def moveTo(x: int, y: int)
+            mouseX = (int)((double)x/scale)
+            mouseY = (int)((double)y/scale)
+
+        def keyDown(keycode: int): bool
+            if sdx.Input.Keys.z == keycode do shoot = true
+            return true
+
+        def keyUp(keycode: int): bool
+            if sdx.Input.Keys.z == keycode do shoot = false
+            return true
+            
+        def keyTyped(character: char): bool
+            return false
+            
+        def touchDown(screenX: int, screenY: int, pointer: int, button: int): bool
+            moveTo(screenX, screenY)
+            shoot = true
+            return false
+            
+        def touchUp(screenX: int, screenY: int, pointer: int, button: int): bool
+            shoot = false
+            return true
+            
+        def touchDragged(screenX: int, screenY: int, pointer: int): bool
+            moveTo(screenX, screenY)
+            return false
+            
+        def mouseMoved(screenX: int, screenY: int): bool
+            moveTo(screenX, screenY)
+            return false
+            
+        def scrolled(amount: int): bool
+            return false
+            
+
 

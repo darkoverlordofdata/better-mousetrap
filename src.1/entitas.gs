@@ -21,7 +21,7 @@ namespace entitas
 
     delegate Factory():Entity*
 
-    struct Buffer
+    struct Alloc
         pool: int           // pool index
         size: int           // pool size
         factory: Factory    // factory callback
@@ -242,6 +242,7 @@ namespace entitas
 
             for var matcher in matchers
                 if matcher.indices.length != 1
+                    //raise new Exception.ECS("MatcherException - %s", matcher.toString())
                     raise new Exception.InvalidMatcherExpression(matcher.toString())
 
                 indices.add(matcher.indices[0])
@@ -292,13 +293,13 @@ namespace entitas
             for var group in groups.keys
                 groups[group].handleEntity(entity, component)
 
-        def setPool(size:int, count:int, buffers: array of Buffer)
+        def setPool(size:int, count:int, config: array of Alloc)
             pool = new array of Entity[size]
             cache = new array of list of Entity*[count]
             for var i=0 to (count-1) do cache[i] = new list of Entity*
-            for var i=0 to (buffers.length)
-                for var k=1 to (buffers[i].size)  
-                    cache[buffers[i].pool].add(buffers[i].factory())
+            for var i=0 to (config.length)
+                for var k=1 to (config[i].size)  
+                    cache[config[i].pool].add(config[i].factory())
         
 
         def setEntityRemovedListener(listener:EntityRemovedListener)
@@ -309,7 +310,7 @@ namespace entitas
             return pool[id].setId(id)
 
         def deleteEntity(entity:Entity*)
-            entity.setActive(false)
+            entity.active = false
             listener.entityRemoved(entity)
             cache[entity.pool].add(entity)
 
@@ -324,13 +325,13 @@ namespace entitas
         def getGroup(matcher : IMatcher) : Group
             group:Group
 
-            if groups.has_key(matcher.toString())
-                group = groups[matcher.toString()]
+            if groups.has_key(matcher.id)
+                group = groups[matcher.id]
             else
                 group = new Group(matcher)
-                for var i = 0 to (this.id-1) do group.handleEntitySilently(&pool[i])
-                groups[matcher.toString()] = group
-
+                for var i = 0 to (this.id-1)
+                    group.handleEntitySilently(&pool[i])
+                groups[matcher.id] = group
                 print "create new group %s:%s", matcher.id, matcher.toString()
                 print "with %d entities", group.entities.size
             return group
