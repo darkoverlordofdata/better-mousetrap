@@ -21,8 +21,7 @@ namespace demo
 
 
         def execute()
-            for var entity in group.entities
-                if entity.active
-                    var exp = entity.expires.timer - game.delta
-                    entity.expires.timer = exp
-                    if (entity.expires.timer < 0) do world.deleteEntity(entity)
+            for var entity in group.entities do if entity.isActive()
+                var exp = entity.expires.value - game.delta
+                entity.expires.value = exp
+                if (entity.expires.value < 0) do world.deleteEntity(entity)

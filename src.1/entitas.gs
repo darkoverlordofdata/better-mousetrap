@@ -8,6 +8,8 @@ namespace entitas
 
     /**
      * Entitas Reborn
+     *
+     * Entities designed around data locality
      * 
      */
     exception Exception
@@ -21,7 +23,7 @@ namespace entitas
 
     delegate Factory():Entity*
 
-    struct Alloc
+    struct Buffer
         pool: int           // pool index
         size: int           // pool size
         factory: Factory    // factory callback
@@ -48,6 +50,8 @@ namespace entitas
     interface IAllOfMatcher : Object 
         def abstract anyOf(args: array of int):IAnyOfMatcher
         def abstract noneOf(args: array of int):Object 
+
+        
     /**
      * A Group is a set of entities defined by a Matcher
      */
@@ -66,11 +70,9 @@ namespace entitas
         /** Add entity to group and raise events */
         def handleEntity(entity : Entity*, index : Components)
             if matcher.matches(entity)
-                entities.add(entity)
-                World.onComponentAdded(entity, index)
+                entities.add(entity) //World.onComponentAdded(entity, index)
             else
-                entities.remove(entity)
-                World.onComponentRemoved(entity, index)
+                entities.remove(entity) //World.onComponentRemoved(entity, index)
 
     /**
      * Match entities by component
@@ -104,12 +106,15 @@ namespace entitas
          * @name entitas.Matcher#allOfIndices */
         prop readonly allOfIndices : array of int
 
+        _allOfMask: uint64
+
         /**
          * A unique sequential index number assigned to each entity at creation
          * @type number
          * @name entitas.Matcher#anyOfIndices */
         prop readonly anyOfIndices : array of int
 
+        _anyOfMask: uint64
         /**
          * A unique sequential index number assigned to each entity at creation
          * @type number
@@ -146,8 +151,18 @@ namespace entitas
          * Check if the entity matches this matcher
          * @param entitas.IEntity entity
          * @returns boolean
+         *
+         *  TODO:
+         *      matcher should cache a bitmask to compare to entity->mask
+         *
          */
         def matches(entity : Entity*) : bool
+
+            // var mask = entity.mask & 0x0fffffffffffffff
+            // var matchesAllOf = _allOfIndices == null ? true : mask == _allOfMask
+            // var matchesAnyOf = _anyOfIndices == null ? true : (mask & _anyOfMask) != 0
+
+
             var matchesAllOf = _allOfIndices == null ? true : entity.hasComponents(_allOfIndices)
             var matchesAnyOf = _anyOfIndices == null ? true : entity.hasAnyComponent(_anyOfIndices)
             var matchesNoneOf = _noneOfIndices == null ? true : !entity.hasAnyComponent(_noneOfIndices)
@@ -242,7 +257,6 @@ namespace entitas
 
             for var matcher in matchers
                 if matcher.indices.length != 1
-                    //raise new Exception.ECS("MatcherException - %s", matcher.toString())
                     raise new Exception.InvalidMatcherExpression(matcher.toString())
 
                 indices.add(matcher.indices[0])
@@ -256,6 +270,7 @@ namespace entitas
         def static AllOf(args : array of int) : IMatcher
             var matcher = new Matcher()
             matcher._allOfIndices = Matcher.distinctIndices(args)
+            matcher._allOfMask = Matcher.buildMask(args)
             return matcher
 
         /**
@@ -266,7 +281,13 @@ namespace entitas
         def static AnyOf(args : array of int) : IMatcher
             var matcher = new Matcher()
             matcher._anyOfIndices = Matcher.distinctIndices(args)
+            matcher._anyOfMask = Matcher.buildMask(args)
             return matcher
+
+        def static buildMask(indices: array of int): uint64
+            accume:uint64 = 0
+            for var index in indices do accume |= POW2[index]
+            return accume
 
     /**
      * ECS World
@@ -293,24 +314,24 @@ namespace entitas
             for var group in groups.keys
                 groups[group].handleEntity(entity, component)
 
-        def setPool(size:int, count:int, config: array of Alloc)
+        def setPool(size:int, count:int, buffers: array of Buffer)
             pool = new array of Entity[size]
             cache = new array of list of Entity*[count]
             for var i=0 to (count-1) do cache[i] = new list of Entity*
-            for var i=0 to (config.length)
-                for var k=1 to (config[i].size)  
-                    cache[config[i].pool].add(config[i].factory())
+            for var i=0 to (buffers.length)
+                for var k=1 to (buffers[i].size)  
+                    cache[buffers[i].pool].add(buffers[i].factory())
         
 
         def setEntityRemovedListener(listener:EntityRemovedListener)
             this.listener = listener
 
-        def createEntity():Entity*
+        def createEntity(name:string, pool:int, active:bool = false):Entity*
             var id = this.id++
-            return pool[id].setId(id)
+            return this.pool[id].setId(id).setName(name).setPool(pool).setActive(active)
 
         def deleteEntity(entity:Entity*)
-            entity.active = false
+            entity.setActive(false)
             listener.entityRemoved(entity)
             cache[entity.pool].add(entity)
 
@@ -325,14 +346,84 @@ namespace entitas
         def getGroup(matcher : IMatcher) : Group
             group:Group
 
-            if groups.has_key(matcher.id)
-                group = groups[matcher.id]
+            if groups.has_key(matcher.toString())
+                group = groups[matcher.toString()]
             else
                 group = new Group(matcher)
-                for var i = 0 to (this.id-1)
-                    group.handleEntitySilently(&pool[i])
-                groups[matcher.id] = group
-                print "create new group %s:%s", matcher.id, matcher.toString()
-                print "with %d entities", group.entities.size
+                for var i = 0 to (this.id-1) do group.handleEntitySilently(&pool[i])
+                groups[matcher.toString()] = group
+
             return group
+
+    /**
+     * Bit array mask
+     */
+    const POW2:array of uint64 = {
+        0x0000000000000000,
+        0x0000000000000001,
+        0x0000000000000002,
+        0x0000000000000004,
+        0x0000000000000008,
+        0x0000000000000010,
+        0x0000000000000020,
+        0x0000000000000040,
+        0x0000000000000080,
+        0x0000000000000100,
+        0x0000000000000200,
+        0x0000000000000400,
+        0x0000000000000800,
+        0x0000000000001000,
+        0x0000000000002000,
+        0x0000000000004000,
+        0x0000000000008000,
+        0x0000000000010000,
+        0x0000000000020000,
+        0x0000000000040000,
+        0x0000000000080000,
+        0x0000000000100000,
+        0x0000000000200000,
+        0x0000000000400000,
+        0x0000000000800000,
+        0x0000000001000000,
+        0x0000000002000000,
+        0x0000000004000000,
+        0x0000000008000000,
+        0x0000000010000000,
+        0x0000000020000000,
+        0x0000000040000000,
+        0x0000000080000000,
+        0x0000000100000000,
+        0x0000000200000000,
+        0x0000000400000000,
+        0x0000000800000000,
+        0x0000001000000000,
+        0x0000002000000000,
+        0x0000004000000000,
+        0x0000008000000000,
+        0x0000010000000000,
+        0x0000020000000000,
+        0x0000040000000000,
+        0x0000080000000000,
+        0x0000100000000000,
+        0x0000200000000000,
+        0x0000400000000000,
+        0x0000800000000000,
+        0x0001000000000000,
+        0x0002000000000000,
+        0x0004000000000000,
+        0x0008000000000000,
+        0x0010000000000000,
+        0x0020000000000000,
+        0x0040000000000000,
+        0x0080000000000000,
+        0x0100000000000000,
+        0x0200000000000000,
+        0x0400000000000000,
+        0x0800000000000000,
+        0x1000000000000000,
+        0x2000000000000000,
+        0x4000000000000000,
+        0x8000000000000000
+
+    }
 

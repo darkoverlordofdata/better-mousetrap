@@ -24,8 +24,8 @@ namespace demo
             pass
             
         def entityAdded(e:Entity*)
-            var layer = (int)e.layer
-            e.sprite.layer = layer
+            var layer = (int)e.layer.value
+            e.sprite.sprite.layer = layer
             
             if game.sprites.size == 0
                 game.sprites.add(e)
@@ -34,7 +34,7 @@ namespace demo
                 var i = 0
                 for s in game.sprites
                     assert(s != null)
-                    if layer <= (int)s.layer
+                    if layer <= (int)s.layer.value
                         game.sprites.insert(i, e)
                         return
                     else

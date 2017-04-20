@@ -112,8 +112,8 @@ void initBullet(SDL_Renderer* renderer, Entity* entity, std::string path) {
 }
 
 void refreshBullet(Entity* entity, int x, int y) {
-    entity->pos.x = x;
-    entity->pos.y = y;
+    entity->position.x = x;
+    entity->position.y = y;
     entity->expires = 1.0;
     entity->sound = Effect::PEW;
     entity->health = new Health(2, 2);
@@ -143,8 +143,8 @@ void initEnemy1(SDL_Renderer* renderer, Entity* entity, std::string path) {
     SDL_FreeSurface(surface);
 }
 void refreshEnemy1(Entity* entity, int x, int y) {
-    entity->pos.x = x;
-    entity->pos.y = y;
+    entity->position.x = x;
+    entity->position.y = y;
     entity->health = new Health(10, 10);
     entity->velocity = new Vector2d(0, 40);
     entity->active = true;
@@ -171,8 +171,8 @@ void initEnemy2(SDL_Renderer* renderer, Entity* entity, std::string path) {
     SDL_FreeSurface(surface);
 }
 void refreshEnemy2(Entity* entity, int x, int y){
-    entity->pos.x = x;
-    entity->pos.y = y;
+    entity->position.x = x;
+    entity->position.y = y;
     entity->health = new Health(20, 20);
     entity->velocity = new Vector2d(0, 30);
     entity->active = true;
@@ -198,8 +198,8 @@ void initEnemy3(SDL_Renderer* renderer, Entity* entity, std::string path) {
     SDL_FreeSurface(surface);
 }
 void refreshEnemy3(Entity* entity, int x, int y){
-    entity->pos.x = x;
-    entity->pos.y = y;
+    entity->position.x = x;
+    entity->position.y = y;
     entity->health = new Health(60, 60);
     entity->velocity = new Vector2d(0, 20);
     entity->active = true;
@@ -227,8 +227,8 @@ void initExplosion(SDL_Renderer* renderer, Entity* entity, std::string path) {
 }
 void refreshExplosion(Entity* entity, int x, int y){
     auto scale = 0.6;
-    entity->pos.x = x;
-    entity->pos.y = y;
+    entity->position.x = x;
+    entity->position.y = y;
     entity->bounds.x = x; 
     entity->bounds.y = y; 
     entity->scale.x = scale;
@@ -261,8 +261,8 @@ void initBang(SDL_Renderer* renderer, Entity* entity, std::string path) {
 }
 void refreshBang(Entity* entity, int x, int y){
     auto scale = 0.4;
-    entity->pos.x = x;
-    entity->pos.y = y;
+    entity->position.x = x;
+    entity->position.y = y;
     entity->bounds.x = x; 
     entity->bounds.y = y; 
     entity->scale.x = scale;
@@ -301,8 +301,8 @@ void refreshParticle(Entity* entity, int x, int y){
     auto velocityY = magnitude * sin(radians);
     auto scale = (double)(std::rand() % 10) / 10.0;
     // std::cout << velocityX << ", " << velocityY << "\n" << std::flush;
-    entity->pos.x = x;
-    entity->pos.y = y;
+    entity->position.x = x;
+    entity->position.y = y;
     entity->bounds.x = x; 
     entity->bounds.y = y; 
     entity->scale.x = scale;

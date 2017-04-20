@@ -40,9 +40,11 @@ avg usec per frame after 10,000 frames:
     4566/98 = 45x  
 
     after implementing Group/Matcher pattern
-
-
     4566/53 = 86x
+    after adding back in sound effects & scores
+    4566/150 = 30x
+
+    features impact performance. feature creep will kill performance.
 
 
 vala is in the same performance spectrum as other high level languages. GObject isn't a major issue. prelmary testing showed cpp running more like fsharp when using object based data. 

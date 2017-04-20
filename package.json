@@ -1,0 +1,23 @@
+{
+  "name": "better-mousetrap",
+  "version": "1.0.0",
+  "description": "Building a better mousetrap",
+  "main": "index.js",
+  "scripts": {
+    "entitas": "entitas"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/darkoverlordofdata/better-mousetrap.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/darkoverlordofdata/better-mousetrap/issues"
+  },
+  "homepage": "https://github.com/darkoverlordofdata/better-mousetrap#readme",
+  "devDependencies": {
+    "entitas-cli": "^0.2.0"
+  }
+}

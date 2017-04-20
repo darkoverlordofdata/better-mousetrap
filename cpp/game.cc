@@ -47,8 +47,8 @@ void Game::draw(int fps, SDL_Rect *clip) {
         if (entities[i].category != Category::BACKGROUND) {
             entities[i].bounds.w = entities[i].sprite.width * entities[i].scale.x;
             entities[i].bounds.h = entities[i].sprite.height * entities[i].scale.y;
-            entities[i].bounds.x = entities[i].pos.x - entities[i].bounds.w / 2;
-            entities[i].bounds.y = entities[i].pos.y - entities[i].bounds.h / 2;
+            entities[i].bounds.x = entities[i].position.x - entities[i].bounds.w / 2;
+            entities[i].bounds.y = entities[i].position.y - entities[i].bounds.h / 2;
         }
         if (entities[i].tint) {
             auto c = entities[i].tint.value();

@@ -13,13 +13,13 @@ uses SDLImage
  */
 def inputSystem(game:Game, ref entity:Entity*)
     if entity.active && entity.actor == Actor.PLAYER
-        entity.pos.x = game.mouseX
-        entity.pos.y = game.mouseY
+        entity.position.x = game.mouseX
+        entity.position.y = game.mouseY
         if game.getKey(122) || game.mouseDown
             game.timeToFire -= game.delta
             if game.timeToFire < 0.0
-                game.bullets.add({entity.pos.x - 27, entity.pos.y + 2})
-                game.bullets.add({entity.pos.x + 27, entity.pos.y + 2})
+                game.bullets.add({entity.position.x - 27, entity.position.y + 2})
+                game.bullets.add({entity.position.x + 27, entity.position.y + 2})
                 game.timeToFire = game.FireRate
         
 /**
@@ -44,8 +44,8 @@ def soundSystem(game:Game, ref entity:Entity)
  */
 def physicsSystem(game:Game, ref entity:Entity*)
     if entity.active && entity.velocity != null
-        entity.pos.x += entity.velocity.x * game.delta
-        entity.pos.y += entity.velocity.y * game.delta
+        entity.position.x += entity.velocity.x * game.delta
+        entity.position.y += entity.velocity.y * game.delta
 
 /**
  * expireSystem
@@ -102,12 +102,12 @@ def removeSystem(game:Game, ref entity:Entity*)
     if entity.active
         case entity.category
             when Category.ENEMY
-                if (entity.pos.y > game.height) 
+                if (entity.position.y > game.height) 
                     entity.active = false
                     game.removeSprite(entity)
                 
             when Category.BULLET
-                if (entity.pos.y < 0) 
+                if (entity.position.y < 0) 
                     entity.active = false
                     game.removeSprite(entity)
 
@@ -200,7 +200,7 @@ def handleCollision(game:Game, ref a:Entity*, ref b:Entity*)
     if (a.health != null) 
         var h = a.health.current - 2
         if (h < 0) 
-            game.explosions.add({a.pos.x, a.pos.y})
+            game.explosions.add({a.position.x, a.position.y})
             a.active = false
             game.removeSprite(a)
         else 

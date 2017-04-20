@@ -24,13 +24,13 @@ Systems::Systems(Game* g): game(g) {
 Systems::~Systems(){}
 
 void Systems::inputSystem(Entity* entity){
-    entity->pos.x = game->mouseX;
-    entity->pos.y = game->mouseY;
+    entity->position.x = game->mouseX;
+    entity->position.y = game->mouseY;
     if (game->getKey(122) || game->mouseDown) {
         timeToFire -= game->delta;
         if (timeToFire < 0.0) {
-            game->bullets.emplace_back(entity->pos.x - 27, entity->pos.y + 2);
-            game->bullets.emplace_back(entity->pos.x + 27, entity->pos.y + 2);
+            game->bullets.emplace_back(entity->position.x - 27, entity->position.y + 2);
+            game->bullets.emplace_back(entity->position.x + 27, entity->position.y + 2);
             timeToFire = FireRate;
         }
     }
@@ -56,8 +56,8 @@ void Systems::soundSystem(Entity* entity){
 
 void Systems::physicsSystem(Entity* entity){
     if (entity->active && entity->velocity) {
-        entity->pos.x += entity->velocity.value()->x * game->delta;
-        entity->pos.y += entity->velocity.value()->y * game->delta;
+        entity->position.x += entity->velocity.value()->x * game->delta;
+        entity->position.y += entity->velocity.value()->y * game->delta;
     }
 }
 
@@ -101,12 +101,12 @@ void Systems::removeSystem(Entity* entity){
     if (entity->active) {
         switch(entity->category) {
             case Category::ENEMY:
-                if (entity->pos.y > game->height) {
+                if (entity->position.y > game->height) {
                     entity->active = false;
                 }
                 break;
             case Category::BULLET:
-                if (entity->pos.y < 0) {
+                if (entity->position.y < 0) {
                     entity->active = false;
                 }
                 break;
@@ -202,7 +202,7 @@ void Systems::handleCollision(Entity* a, Entity* b){
     if (a->health) {
         auto h = a->health.value()->current - 2;
         if (h < 0) {
-            game->explosions.emplace_back(a->pos.x, a->pos.y);
+            game->explosions.emplace_back(a->position.x, a->position.y);
             a->active = false;
         } else {
             a->health = new Health(h, a->health.value()->maximum);

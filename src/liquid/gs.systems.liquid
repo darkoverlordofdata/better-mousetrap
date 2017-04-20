@@ -1,0 +1,22 @@
+[indent=4]
+uses
+    Bosco
+    Entitas
+
+namespace {{ namespace }} 
+
+
+    class {{ name }} : Object implements ISystem
+        game : Game
+        world: World
+
+        construct(game : Game)
+            this.game = game
+
+        def setWorld(world: World)
+            this.world = world
+
+
+        def execute()
+            pass
+

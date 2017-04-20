@@ -27,11 +27,11 @@ namespace demo
             player = factory.createPlayer()
 
         def execute()
-            player.setPos(mouseX, mouseY)
+            player.setPosition(mouseX, mouseY)
             if shoot do timeToFire -= game.delta
             if timeToFire < 0.0
-                factory.newBullet((int)player.pos.x - 27, (int)player.pos.y + 2)
-                factory.newBullet((int)player.pos.x + 27, (int)player.pos.y + 2)
+                factory.newBullet((int)player.position.x - 27, (int)player.position.y + 2)
+                factory.newBullet((int)player.position.x + 27, (int)player.position.y + 2)
                 timeToFire = FireRate
 
 

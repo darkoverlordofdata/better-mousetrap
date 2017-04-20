@@ -2,7 +2,7 @@
 uses Gee
 uses entitas
 uses sdx
-uses sdx.graphics.s2d
+// uses sdx.graphics.s2d
 
 namespace demo
 
@@ -13,17 +13,13 @@ namespace demo
         t1          : double = 0.0
         t2          : double = 0.0
         t3          : double = 0.0
-        zk           : int
-        zt           : double
-        zt1          : double = 0.0
-        zt2          : double = 0.0
-        zt3          : double = 0.0
         profile     : bool = true
         delta       : double 
         factory     : Factory
         world       : World
         sprites     : list of Entity* = new list of Entity*
-        fpsSprite : private Sprite
+        onetime     : list of sdx.graphics.s2d.Sprite = new list of sdx.graphics.s2d.Sprite
+        fpsSprite   : private sdx.graphics.s2d.Sprite
 
         construct(width: int, height: int, base:string) 
             super(width, height, base)
@@ -37,6 +33,7 @@ namespace demo
                 ).add(new SpawnSystem(this, factory)
                 // ).add(new SoundSystem(this, factory)
                 ).add(new CollisionSystem(this, factory)
+                // ).add(new HealthSystem(this, factory)
                 ).add(new InputSystem(this, factory)
                 ).add(new PhysicsSystem(this, factory)
                 ).add(new ExpireSystem(this, factory)
@@ -70,29 +67,30 @@ namespace demo
         def override draw()
             if showFps
                 if fpsSprite != null do fpsSprite = null
-                fpsSprite = new Sprite.text("%2.2f".printf(Sdx.graphics.fps), font, sdx.graphics.Color.AntiqueWhite)
+                fpsSprite = new sdx.graphics.s2d.Sprite.text("%2.2f".printf(Sdx.graphics.fps), font, sdx.graphics.Color.AntiqueWhite)
                 fpsSprite.centered = false
             renderer.set_draw_color(0, 0, 0, 0)
             renderer.clear()
             sprites.filter(_isActive).foreach(_drawEach)
             if showFps && fpsSprite != null do fpsSprite.render(this.renderer, 0, 0)
+            for var sprite in onetime do sprite.render(this.renderer, sprite.x, sprite.y)
+            onetime.clear() 
             renderer.present()
 
         def _isActive(e:Entity*):bool
-            return e->active
+            return e->isActive()
 
         def _drawEach(e:Entity*):bool
-            e->bounds.w = (int)((double)e->sprite.width * e->scale.x)
-            e->bounds.h = (int)((double)e->sprite.height * e->scale.y)
+            e->bounds.w = (int)((double)e->sprite.sprite.width * e->scale.x)
+            e->bounds.h = (int)((double)e->sprite.sprite.height * e->scale.y)
             if e->pool != Pool.BACKGROUND
-                e->bounds.x = (int)((double)e->pos.x - e->bounds.w / 2)
-                e->bounds.y = (int)((double)e->pos.y - e->bounds.h / 2)
-                // if e->tint != null
-                if e->hasTint
-                    e->sprite.texture.set_color_mod((uint8)e->tint.r, (uint8)e->tint.g, (uint8)e->tint.b)
-                    e->sprite.texture.set_alpha_mod((uint8)e->tint.a)
+                e->bounds.x = (int)((double)e->position.x - e->bounds.w / 2)
+                e->bounds.y = (int)((double)e->position.y - e->bounds.h / 2)
+                if e->tint != null
+                    e->sprite.sprite.texture.set_color_mod((uint8)e->tint.r, (uint8)e->tint.g, (uint8)e->tint.b)
+                    e->sprite.sprite.texture.set_alpha_mod((uint8)e->tint.a)
                 
-            renderer.copy(e->sprite.texture, null, e->bounds)
+            renderer.copy(e->sprite.sprite.texture, null, { e->bounds.x, e->bounds.y, (uint)e->bounds.w, (uint)e->bounds.h })
             return true
 
 

@@ -20,8 +20,7 @@ namespace demo
             group = world.getGroup(Matcher.AllOf({Components.SoundComponent}))
 
         def execute()
-            for var entity in group.entities 
-                if entity.active //&& entity.sound != null
-                    entity.sound.play()
+            for var entity in group.entities do if entity.isActive() 
+                entity.sound.sound.play()
 
 

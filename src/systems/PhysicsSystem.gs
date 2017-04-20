@@ -21,10 +21,9 @@ namespace demo
 
 
         def execute()
-            for var entity in group.entities 
-                if entity.active 
-                    entity.pos = entity.pos.add(entity.velocity.mul(game.delta))
-                    // entity.pos.x += entity.velocity.x * game.delta
-                    // entity.pos.y += entity.velocity.y * game.delta
+            for var entity in group.entities do if entity.isActive() 
+                // entity.pos = entity.position.add(entity.velocity.mul(game.delta))
+                entity.position.x += entity.velocity.x * game.delta
+                entity.position.y += entity.velocity.y * game.delta
 
 

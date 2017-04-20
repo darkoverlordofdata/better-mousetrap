@@ -20,25 +20,21 @@ namespace demo
             group = world.getGroup(Matcher.AllOf({Components.TweenComponent}))
 
         def execute()
-            for var entity in group.entities 
-            // for var entity in world.entity do executeEach(ref entity)
+            for var entity in group.entities do if entity.isActive() 
+                var x = entity.scale.x + (entity.tween.speed * game.delta)
+                var y = entity.scale.y + (entity.tween.speed * game.delta)
+                var active = entity.tween.active
 
-            // def executeEach(ref entity:Entity*)
-                if entity.active && entity.hasTween()
-                    var x = entity.scale.x + (entity.tween.speed * game.delta)
-                    var y = entity.scale.y + (entity.tween.speed * game.delta)
-                    var active = entity.tween.active
-
-                    if x > entity.tween.max 
-                        x = entity.tween.max
-                        y = entity.tween.max
-                        active = false
-                    else if x < entity.tween.min
-                        x = entity.tween.min
-                        y = entity.tween.min
-                        active = false
-                    
-                    entity.scale.x = x 
-                    entity.scale.y = y 
-                    entity.tween.active = active 
+                if x > entity.tween.max 
+                    x = entity.tween.max
+                    y = entity.tween.max
+                    active = false
+                else if x < entity.tween.min
+                    x = entity.tween.min
+                    y = entity.tween.min
+                    active = false
+                
+                entity.scale.x = x 
+                entity.scale.y = y 
+                entity.tween.active = active 
 

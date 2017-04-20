@@ -65,15 +65,12 @@ namespace demo
         def createEntity(name:string, pool:Pool, path:string, scale:double = 1.0, active:bool = false):Entity*
             var sprite = new sdx.graphics.s2d.Sprite(@"images/$path.png")
             // var sprite = atlas.createSprite(path, -1)
-            return (world.createEntity()
-                .setName(name)
-                .setActive(active)
-                .setPool(pool)
-                .setPos(0, 0)
-                .setLayer(pool)
-                .setBounds(0, 0, sprite.width, sprite.height)
-                .setScale(scale, scale)
-                .setSprite(sprite))
+            return (world.createEntity(name, pool, active)
+                .addPosition(0, 0)
+                .addLayer(pool)
+                .addBounds(0, 0, sprite.width, sprite.height)
+                .addScale(scale, scale)
+                .addSprite(sprite))
 
 
         /**
@@ -108,6 +105,7 @@ namespace demo
                 createEntity("enemy1", Pool.ENEMY1, "enemy1")
                 .addHealth(10, 10)
                 .addVelocity(0, 40)
+                .addText("100%", new sdx.graphics.s2d.Sprite.text("100%", Sdx.app.font, sdx.graphics.Color.Lime))
                 .setEnemy(true))
 
         def createEnemy2():Entity*
@@ -115,6 +113,7 @@ namespace demo
                 createEntity("enemy2", Pool.ENEMY2, "enemy2")
                 .addHealth(20, 20)
                 .addVelocity(0, 30)
+                .addText("100%", new sdx.graphics.s2d.Sprite.text("100%", Sdx.app.font, sdx.graphics.Color.Lime))
                 .setEnemy(true))
 
         def createEnemy3():Entity*
@@ -122,6 +121,7 @@ namespace demo
                 createEntity("enemy3", Pool.ENEMY3, "enemy3")
                 .addHealth(60, 60)
                 .addVelocity(0, 20)
+                .addText("100%", new sdx.graphics.s2d.Sprite.text("100%", Sdx.app.font, sdx.graphics.Color.Lime))
                 .setEnemy(true))
             
         def createExplosion():Entity*
@@ -152,7 +152,7 @@ namespace demo
                 for var i=1 to 10 do world.cache[Pool.BULLET].add(createBullet())
             var entity = world.cache[Pool.BULLET].remove_at(0)
             listener.entityAdded(entity
-                .setPos(x, y)
+                .setPosition(x, y)
                 .setExpires(1.0)
                 .setActive(true))
 
@@ -162,7 +162,7 @@ namespace demo
 
             var entity = world.cache[Pool.ENEMY1].remove_at(0)
             listener.entityAdded(entity
-                .setPos(x, y)
+                .setPosition(x, y)
                 .setHealth(10, 10)
                 .setActive(true))
 
@@ -172,7 +172,7 @@ namespace demo
 
             var entity = world.cache[Pool.ENEMY2].remove_at(0)
             listener.entityAdded(entity
-                .setPos(x, y)
+                .setPosition(x, y)
                 .setHealth(20, 20) 
                 .setActive(true))
 
@@ -182,7 +182,7 @@ namespace demo
 
             var entity = world.cache[Pool.ENEMY3].remove_at(0)
             listener.entityAdded(entity
-                .setPos(x, y)
+                .setPosition(x, y)
                 .setHealth(60, 60)
                 .setActive(true))
 
@@ -194,7 +194,7 @@ namespace demo
             listener.entityAdded(entity
                 .setBounds(x, y, (int)entity.bounds.w, (int)entity.bounds.h)
                 .setTween(0.006, 0.6, -3, false, true)
-                .setPos(x, y)
+                .setPosition(x, y)
                 .setScale(0.6, 0.6)
                 .setExpires(0.2)
                 .setActive(true))
@@ -207,7 +207,7 @@ namespace demo
             listener.entityAdded(entity
                 .setBounds(x, y, (int)entity.bounds.w, (int)entity.bounds.h)
                 .setTween(0.003, 0.3, -3, false, true)
-                .setPos(x, y)
+                .setPosition(x, y)
                 .setScale(0.3, 0.3)
                 .setExpires(0.2)
                 .setActive(true))
@@ -225,7 +225,7 @@ namespace demo
 
             listener.entityAdded(entity
                 .setBounds(x, y, (int)entity.bounds.w, (int)entity.bounds.h)
-                .setPos(x, y)
+                .setPosition(x, y)
                 .setScale(scale, scale)
                 .setVelocity(velocityX, velocityY)
                 .setExpires(0.75)

@@ -20,18 +20,17 @@ namespace demo
             group = world.getGroup(Matcher.AllOf({Components.VelocityComponent}))
 
         def execute()
-            for var entity in group.entities 
-                if entity.active
-                    case entity.pool
-                        when Pool.ENEMY1
-                            if entity.pos.y > game.height do world.deleteEntity(entity)
-                            
-                        when Pool.ENEMY2
-                            if entity.pos.y > game.height do world.deleteEntity(entity)
-                            
-                        when Pool.ENEMY3
-                            if entity.pos.y > game.height do world.deleteEntity(entity)
-                            
-                        when Pool.BULLET
-                            if entity.pos.y < 0 do world.deleteEntity(entity)
+            for var entity in group.entities do if entity.isActive()
+                case entity.pool
+                    when Pool.ENEMY1
+                        if entity.position.y > game.height do world.deleteEntity(entity)
+                        
+                    when Pool.ENEMY2
+                        if entity.position.y > game.height do world.deleteEntity(entity)
+                        
+                    when Pool.ENEMY3
+                        if entity.position.y > game.height do world.deleteEntity(entity)
+                        
+                    when Pool.BULLET
+                        if entity.position.y < 0 do world.deleteEntity(entity)
 

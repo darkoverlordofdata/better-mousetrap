@@ -119,8 +119,8 @@ def createBullet(game:Game, pool:array of Entity):Entity*
 
 
 def initBullet(game: Game, ref entity:Entity*, x:int, y:int) 
-    entity.pos.x = x
-    entity.pos.y = y
+    entity.position.x = x
+    entity.position.y = y
     entity.expires.timer = 1.0
     entity.active = true
     game.addSprite(entity)
@@ -157,8 +157,8 @@ def createEnemy1(game:Game, pool:array of Entity):Entity*
 
 
 def initEnemy1(game: Game, ref entity:Entity*, x:int, y:int) 
-    entity.pos.x = x
-    entity.pos.y = y
+    entity.position.x = x
+    entity.position.y = y
     entity.health.current = 10
     entity.active = true
     game.addSprite(entity)
@@ -195,8 +195,8 @@ def createEnemy2(game:Game, pool:array of Entity):Entity*
 
 
 def initEnemy2(game: Game, ref entity:Entity*, x:int, y:int)
-    entity.pos.x = x
-    entity.pos.y = y
+    entity.position.x = x
+    entity.position.y = y
     entity.health.current = 20
     entity.active = true
     game.addSprite(entity)
@@ -231,8 +231,8 @@ def createEnemy3(game:Game, pool:array of Entity):Entity*
     return &pool[id]
     
 def initEnemy3(game: Game, ref entity:Entity*, x:int, y:int)
-    entity.pos.x = x
-    entity.pos.y = y
+    entity.position.x = x
+    entity.position.y = y
     entity.health.current = 60
     entity.active = true
     game.addSprite(entity)
@@ -268,8 +268,8 @@ def createExplosion(game:Game, pool:array of Entity):Entity*
     return &pool[id]
 
 def initExplosion(game: Game, ref entity:Entity*, x:int, y:int)
-    entity.pos.x = x
-    entity.pos.y = y
+    entity.position.x = x
+    entity.position.y = y
     entity.bounds.x = x 
     entity.bounds.y = y 
     entity.scale.x = 0.6
@@ -310,8 +310,8 @@ def createBang(game:Game, pool:array of Entity):Entity*
 
 
 def initBang(game: Game, ref entity:Entity*, x:int, y:int)
-    entity.pos.x = x
-    entity.pos.y = y
+    entity.position.x = x
+    entity.position.y = y
     entity.bounds.x = x 
     entity.bounds.y = y 
     entity.scale.x = 0.4
@@ -358,8 +358,8 @@ def initParticle(game: Game, ref entity:Entity*, x:int, y:int)
     var velocityY = magnitude * Math.sin(radians)
     var scale = game.rand.double_range(0.1, 1.0)
 
-    entity.pos.x = x
-    entity.pos.y = y
+    entity.position.x = x
+    entity.position.y = y
     entity.bounds.x = x 
     entity.bounds.y = y 
     entity.scale.x = scale
