@@ -26,9 +26,12 @@ namespace demo
             this.world = world
             player = factory.createPlayer()
 
-        def execute()
+        def initialize()
+            pass
+
+        def execute(delta:double)
             player.setPosition(mouseX, mouseY)
-            if shoot do timeToFire -= game.delta
+            if shoot do timeToFire -= delta
             if timeToFire < 0.0
                 factory.newBullet((int)player.position.x - 27, (int)player.position.y + 2)
                 factory.newBullet((int)player.position.x + 27, (int)player.position.y + 2)

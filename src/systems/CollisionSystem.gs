@@ -18,21 +18,25 @@ namespace demo
 
         def setWorld(world:World)
             this.world = world
-            bullets = world.getGroup(Matcher.AllOf({Components.BulletComponent}))
-            enemies = world.getGroup(Matcher.AllOf({Components.EnemyComponent}))
+            bullets = world.getGroup(Matcher.AllOf({ Components.BulletComponent }))
+            enemies = world.getGroup(Matcher.AnyOf({
+                Components.Enemy1Component, 
+                Components.Enemy2Component, 
+                Components.Enemy3Component
+            }))
 
-        def execute()
+        def initialize()
+            pass
+
+        def execute(delta:double)
             for var enemy in enemies.entities do if enemy.isActive()
                 for var bullet in bullets.entities do if bullet.isActive()
-                    // if enemy.bounds.is_intersecting(bullet.bounds)
-                    if intersects(ref enemy, ref bullet)
+                    if intersects(ref enemy.bounds, ref bullet.bounds)
                         handleCollision(ref enemy, ref bullet)
                         return
 
 
-        def intersects(ref a:Entity*, ref b:Entity*):bool 
-            var r1 = a.bounds
-            var r2 = b.bounds
+        def intersects(ref r1:Bounds, ref r2:Bounds):bool 
             return ((r1.x < r2.x + r2.w) && 
                     (r1.x + r1.w > r2.x) && 
                     (r1.y < r2.y + r2.h) && 
@@ -51,5 +55,5 @@ namespace demo
                     factory.newExplosion((int)a.position.x, (int)a.position.y)
                     world.deleteEntity(a)
                 else 
-                    a.health = { current, a.health.maximum }
+                    a.health.current = current
 

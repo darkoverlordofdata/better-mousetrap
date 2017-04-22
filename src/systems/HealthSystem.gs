@@ -1,7 +1,7 @@
 [indent=4]
 uses entitas
 uses sdx
-//uses sdx.graphics.s2d
+uses sdx.graphics
 
 namespace demo
 
@@ -24,31 +24,17 @@ namespace demo
             }))
 
 
-        def execute()
-            sprite:sdx.graphics.s2d.Sprite? = null
-        
+        def initialize()
+            pass
+
+        def execute(delta:double)
             for var entity in group.entities do if entity.isActive()
-                var position = entity.position
-                var health = entity.health
-                var text = entity.text
-                var pct = "%d%%".printf((int)Math.fmin(100, (double)health.current/(double)health.maximum*100.0))
+                var pct = "%d%%".printf((int)Math.fmin(100, (double)entity.health.current/(double)entity.health.maximum*100.0))
 
-                if pct == text.text
-                    sprite = text.sprite
-                    if sprite == null
-                        sprite = new sdx.graphics.s2d.Sprite.text(text.text, game.font, sdx.graphics.Color.Lime)
-                        sprite.centered = false
-                        text.sprite = sprite
-                else
-                    text.text = pct
-                    text.sprite = null
-                    sprite = new sdx.graphics.s2d.Sprite.text(text.text, game.font, sdx.graphics.Color.LimeGreen)
-                    sprite.centered = false
-                    text.sprite = sprite
-
-                sprite.x = (int)position.x
-                sprite.y = (int)position.y
-                game.onetime.add(sprite)
-
+                if pct != entity.text.text
+                    entity.text.text = pct
+                    entity.text.sprite.setText(pct, Sdx.app.font, Color.LimeGreen)
+                    entity.text.sprite.x = (int)entity.position.x
+                    entity.text.sprite.y = (int)entity.position.y
 
 

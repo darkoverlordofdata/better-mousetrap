@@ -6,78 +6,9 @@
 [indent=4]
 namespace entitas
 
-    const BOUNDS:uint64 = 0x0001
-    const BULLET:uint64 = 0x0002
-    const ENEMY:uint64 = 0x0004
-    const EXPIRES:uint64 = 0x0008
-    const HEALTH:uint64 = 0x0010
-    const LAYER:uint64 = 0x0020
-    const POSITION:uint64 = 0x0040
-    const SCALE:uint64 = 0x0080
-    const SOUND:uint64 = 0x0100
-    const SPRITE:uint64 = 0x0200
-    const TEXT:uint64 = 0x0400
-    const TINT:uint64 = 0x0800
-    const TWEEN:uint64 = 0x1000
-    const VELOCITY:uint64 = 0x2000
-    const ACTIVE:uint64 = 0x8000000000000000
 
-    // const POW2:array of uint64 = {
-    //     0x0000,
-    //     0x0001,
-    //     0x0002,
-    //     0x0004,
-    //     0x0008,
-    //     0x0010,
-    //     0x0020,
-    //     0x0040,
-    //     0x0080,
-    //     0x0100,
-    //     0x0200,
-    //     0x0400,
-    //     0x0800,
-    //     0x1000,
-    //     0x2000
-    // }
-    /**
-    * Components
-    */
-    const ComponentString: array of string = {
-        "CoreComponent",
-        "BoundsComponent",
-        "BulletComponent",
-        "EnemyComponent",
-        "ExpiresComponent",
-        "HealthComponent",
-        "LayerComponent",
-        "PositionComponent",
-        "ScaleComponent",
-        "SoundComponent",
-        "SpriteComponent",
-        "TextComponent",
-        "TintComponent",
-        "TweenComponent",
-        "VelocityComponent",
-        ""
-    }
-
-    enum Components
-        CoreComponent
-        BoundsComponent
-        BulletComponent
-        EnemyComponent
-        ExpiresComponent
-        HealthComponent
-        LayerComponent
-        PositionComponent
-        ScaleComponent
-        SoundComponent
-        SpriteComponent
-        TextComponent
-        TintComponent
-        TweenComponent
-        VelocityComponent
-        COUNT
+    struct Background
+        active : bool
 
     struct Bounds
         x : int 
@@ -88,7 +19,13 @@ namespace entitas
     struct Bullet
         active : bool
 
-    struct Enemy
+    struct Enemy1
+        active : bool
+
+    struct Enemy2
+        active : bool
+
+    struct Enemy3
         active : bool
 
     struct Expires
@@ -97,6 +34,12 @@ namespace entitas
     struct Health
         current : double 
         maximum : double 
+
+    struct Hud
+        active : bool
+
+    struct Index
+        value : int 
 
     struct Layer
         value : int 
@@ -141,11 +84,16 @@ namespace entitas
         name        : string            /* display name */
         pool        : int               /* pool entities by type */
         mask        : uint64            /* hasComponent bit array */
+        background  : Background?
         bounds      : Bounds?
         bullet      : Bullet?
-        enemy       : Enemy?
+        enemy1      : Enemy1?
+        enemy2      : Enemy2?
+        enemy3      : Enemy3?
         expires     : Expires?
         health      : Health?
+        hud         : Hud?
+        index       : Index?
         layer       : Layer?
         position    : Position?
         scale       : Scale?
@@ -157,14 +105,14 @@ namespace entitas
         velocity    : Velocity?
 
         def hasComponent(index : int) : bool
-            return (POW2[index] & mask) != 0
+            return (__POW2__[index] & mask) != 0
 
         def hasComponents(indices : array of int) : bool
-            for var index in indices do if (POW2[index] & mask) == 0 do return false
+            for var index in indices do if (__POW2__[index] & mask) == 0 do return false
             return true
 
         def hasAnyComponent(indices : array of int) : bool
-            for var index in indices do if (POW2[index] & mask) != 0 do return true
+            for var index in indices do if (__POW2__[index] & mask) != 0 do return true
             return false
 
         def setId(id:int):Entity*
@@ -176,8 +124,9 @@ namespace entitas
             return &this
 
         def setActive(active:bool):Entity*
-            if active do mask |= ACTIVE
-            else do mask ^= ACTIVE
+            if ((mask & __ACTIVE__) == __ACTIVE__ ) == active do return &this
+            if active do mask |= __ACTIVE__
+            else do mask ^= __ACTIVE__
             return &this
 
         def setPool(pool:int):Entity*
@@ -185,21 +134,50 @@ namespace entitas
             return &this
 
         def isActive():bool
-            return (mask & ACTIVE) == ACTIVE
+            return (mask & __ACTIVE__) == __ACTIVE__
+
+        def toString():string
+            var sb = new StringBuilder()
+            sb.append(@"$id: ($name) ")
+            var seperator = false
+            for var i = 1 to Components.COUNT
+                if hasComponent(i)
+                    if seperator do sb.append(", ")
+                    sb.append(ComponentString[i].replace("Component", ""))
+                    seperator = true
+            return sb.str
 
         /**
          * Components:
          */
 
+        def setBackground(value:bool):Entity*
+            if value
+                this.background = { true }
+                mask |= __BACKGROUND__
+                World.onComponentAdded(&this, Components.BackgroundComponent)
+            else
+                this.background = null
+                mask ^= __BACKGROUND__
+                World.onComponentRemoved(&this, Components.BackgroundComponent)
+            return &this
+
+        def isBackground():bool
+            if this.background == null do return false
+            else do return true
+
+        def hasBounds():bool
+            return (mask & __BOUNDS__) != 0
+
         def addBounds(x:int,y:int,w:int,h:int):Entity* 
-            if (mask & BOUNDS) != 0 do raise new Exception.EntityAlreadyHasComponent("BoundsComponent")
+            if (mask & __BOUNDS__) != 0 do raise new Exception.EntityAlreadyHasComponent("BoundsComponent")
             this.bounds = { x, y, w, h }
-            mask |= BOUNDS
+            mask |= __BOUNDS__
             World.onComponentAdded(&this, Components.BoundsComponent)
             return &this
 
         def setBounds(x:int,y:int,w:int,h:int):Entity*
-            if (mask & BOUNDS) == 0 do raise new Exception.EntityDoesNotHaveComponent("BoundsComponent")
+            if (mask & __BOUNDS__) == 0 do raise new Exception.EntityDoesNotHaveComponent("BoundsComponent")
             this.bounds.x = x
             this.bounds.y = y
             this.bounds.w = w
@@ -207,20 +185,20 @@ namespace entitas
             return &this
 
         def removeBounds():Entity*
-            if (mask & BOUNDS) == 0 do raise new Exception.EntityDoesNotHaveComponent("BoundsComponent")
+            if (mask & __BOUNDS__) == 0 do raise new Exception.EntityDoesNotHaveComponent("BoundsComponent")
             this.bounds = null
-            mask ^= BOUNDS
+            mask ^= __BOUNDS__
             World.onComponentRemoved(&this, Components.BoundsComponent)
             return &this
 
         def setBullet(value:bool):Entity*
             if value
                 this.bullet = { true }
-                mask |= BULLET
+                mask |= __BULLET__
                 World.onComponentAdded(&this, Components.BulletComponent)
             else
                 this.bullet = null
-                mask ^= BULLET
+                mask ^= __BULLET__
                 World.onComponentRemoved(&this, Components.BulletComponent)
             return &this
 
@@ -228,186 +206,280 @@ namespace entitas
             if this.bullet == null do return false
             else do return true
 
-        def setEnemy(value:bool):Entity*
+        def setEnemy1(value:bool):Entity*
             if value
-                this.enemy = { true }
-                mask |= ENEMY
-                World.onComponentAdded(&this, Components.EnemyComponent)
+                this.enemy1 = { true }
+                mask |= __ENEMY1__
+                World.onComponentAdded(&this, Components.Enemy1Component)
             else
-                this.enemy = null
-                mask ^= ENEMY
-                World.onComponentRemoved(&this, Components.EnemyComponent)
+                this.enemy1 = null
+                mask ^= __ENEMY1__
+                World.onComponentRemoved(&this, Components.Enemy1Component)
             return &this
 
-        def isEnemy():bool
-            if this.enemy == null do return false
+        def isEnemy1():bool
+            if this.enemy1 == null do return false
             else do return true
 
+        def setEnemy2(value:bool):Entity*
+            if value
+                this.enemy2 = { true }
+                mask |= __ENEMY2__
+                World.onComponentAdded(&this, Components.Enemy2Component)
+            else
+                this.enemy2 = null
+                mask ^= __ENEMY2__
+                World.onComponentRemoved(&this, Components.Enemy2Component)
+            return &this
+
+        def isEnemy2():bool
+            if this.enemy2 == null do return false
+            else do return true
+
+        def setEnemy3(value:bool):Entity*
+            if value
+                this.enemy3 = { true }
+                mask |= __ENEMY3__
+                World.onComponentAdded(&this, Components.Enemy3Component)
+            else
+                this.enemy3 = null
+                mask ^= __ENEMY3__
+                World.onComponentRemoved(&this, Components.Enemy3Component)
+            return &this
+
+        def isEnemy3():bool
+            if this.enemy3 == null do return false
+            else do return true
+
+        def hasExpires():bool
+            return (mask & __EXPIRES__) != 0
+
         def addExpires(value:double):Entity* 
-            if (mask & EXPIRES) != 0 do raise new Exception.EntityAlreadyHasComponent("ExpiresComponent")
+            if (mask & __EXPIRES__) != 0 do raise new Exception.EntityAlreadyHasComponent("ExpiresComponent")
             this.expires = { value }
-            mask |= EXPIRES
+            mask |= __EXPIRES__
             World.onComponentAdded(&this, Components.ExpiresComponent)
             return &this
 
         def setExpires(value:double):Entity*
-            if (mask & EXPIRES) == 0 do raise new Exception.EntityDoesNotHaveComponent("ExpiresComponent")
+            if (mask & __EXPIRES__) == 0 do raise new Exception.EntityDoesNotHaveComponent("ExpiresComponent")
             this.expires.value = value
             return &this
 
         def removeExpires():Entity*
-            if (mask & EXPIRES) == 0 do raise new Exception.EntityDoesNotHaveComponent("ExpiresComponent")
+            if (mask & __EXPIRES__) == 0 do raise new Exception.EntityDoesNotHaveComponent("ExpiresComponent")
             this.expires = null
-            mask ^= EXPIRES
+            mask ^= __EXPIRES__
             World.onComponentRemoved(&this, Components.ExpiresComponent)
             return &this
 
+        def hasHealth():bool
+            return (mask & __HEALTH__) != 0
+
         def addHealth(current:double,maximum:double):Entity* 
-            if (mask & HEALTH) != 0 do raise new Exception.EntityAlreadyHasComponent("HealthComponent")
+            if (mask & __HEALTH__) != 0 do raise new Exception.EntityAlreadyHasComponent("HealthComponent")
             this.health = { current, maximum }
-            mask |= HEALTH
+            mask |= __HEALTH__
             World.onComponentAdded(&this, Components.HealthComponent)
             return &this
 
         def setHealth(current:double,maximum:double):Entity*
-            if (mask & HEALTH) == 0 do raise new Exception.EntityDoesNotHaveComponent("HealthComponent")
+            if (mask & __HEALTH__) == 0 do raise new Exception.EntityDoesNotHaveComponent("HealthComponent")
             this.health.current = current
             this.health.maximum = maximum
             return &this
 
         def removeHealth():Entity*
-            if (mask & HEALTH) == 0 do raise new Exception.EntityDoesNotHaveComponent("HealthComponent")
+            if (mask & __HEALTH__) == 0 do raise new Exception.EntityDoesNotHaveComponent("HealthComponent")
             this.health = null
-            mask ^= HEALTH
+            mask ^= __HEALTH__
             World.onComponentRemoved(&this, Components.HealthComponent)
             return &this
 
+        def setHud(value:bool):Entity*
+            if value
+                this.hud = { true }
+                mask |= __HUD__
+                World.onComponentAdded(&this, Components.HudComponent)
+            else
+                this.hud = null
+                mask ^= __HUD__
+                World.onComponentRemoved(&this, Components.HudComponent)
+            return &this
+
+        def isHud():bool
+            if this.hud == null do return false
+            else do return true
+
+        def hasIndex():bool
+            return (mask & __INDEX__) != 0
+
+        def addIndex(value:int):Entity* 
+            if (mask & __INDEX__) != 0 do raise new Exception.EntityAlreadyHasComponent("IndexComponent")
+            this.index = { value }
+            mask |= __INDEX__
+            World.onComponentAdded(&this, Components.IndexComponent)
+            return &this
+
+        def setIndex(value:int):Entity*
+            if (mask & __INDEX__) == 0 do raise new Exception.EntityDoesNotHaveComponent("IndexComponent")
+            this.index.value = value
+            return &this
+
+        def removeIndex():Entity*
+            if (mask & __INDEX__) == 0 do raise new Exception.EntityDoesNotHaveComponent("IndexComponent")
+            this.index = null
+            mask ^= __INDEX__
+            World.onComponentRemoved(&this, Components.IndexComponent)
+            return &this
+
+        def hasLayer():bool
+            return (mask & __LAYER__) != 0
+
         def addLayer(value:int):Entity* 
-            if (mask & LAYER) != 0 do raise new Exception.EntityAlreadyHasComponent("LayerComponent")
+            if (mask & __LAYER__) != 0 do raise new Exception.EntityAlreadyHasComponent("LayerComponent")
             this.layer = { value }
-            mask |= LAYER
+            mask |= __LAYER__
             World.onComponentAdded(&this, Components.LayerComponent)
             return &this
 
         def setLayer(value:int):Entity*
-            if (mask & LAYER) == 0 do raise new Exception.EntityDoesNotHaveComponent("LayerComponent")
+            if (mask & __LAYER__) == 0 do raise new Exception.EntityDoesNotHaveComponent("LayerComponent")
             this.layer.value = value
             return &this
 
         def removeLayer():Entity*
-            if (mask & LAYER) == 0 do raise new Exception.EntityDoesNotHaveComponent("LayerComponent")
+            if (mask & __LAYER__) == 0 do raise new Exception.EntityDoesNotHaveComponent("LayerComponent")
             this.layer = null
-            mask ^= LAYER
+            mask ^= __LAYER__
             World.onComponentRemoved(&this, Components.LayerComponent)
             return &this
 
+        def hasPosition():bool
+            return (mask & __POSITION__) != 0
+
         def addPosition(x:double,y:double):Entity* 
-            if (mask & POSITION) != 0 do raise new Exception.EntityAlreadyHasComponent("PositionComponent")
+            if (mask & __POSITION__) != 0 do raise new Exception.EntityAlreadyHasComponent("PositionComponent")
             this.position = { x, y }
-            mask |= POSITION
+            mask |= __POSITION__
             World.onComponentAdded(&this, Components.PositionComponent)
             return &this
 
         def setPosition(x:double,y:double):Entity*
-            if (mask & POSITION) == 0 do raise new Exception.EntityDoesNotHaveComponent("PositionComponent")
+            if (mask & __POSITION__) == 0 do raise new Exception.EntityDoesNotHaveComponent("PositionComponent")
             this.position.x = x
             this.position.y = y
             return &this
 
         def removePosition():Entity*
-            if (mask & POSITION) == 0 do raise new Exception.EntityDoesNotHaveComponent("PositionComponent")
+            if (mask & __POSITION__) == 0 do raise new Exception.EntityDoesNotHaveComponent("PositionComponent")
             this.position = null
-            mask ^= POSITION
+            mask ^= __POSITION__
             World.onComponentRemoved(&this, Components.PositionComponent)
             return &this
 
+        def hasScale():bool
+            return (mask & __SCALE__) != 0
+
         def addScale(x:double,y:double):Entity* 
-            if (mask & SCALE) != 0 do raise new Exception.EntityAlreadyHasComponent("ScaleComponent")
+            if (mask & __SCALE__) != 0 do raise new Exception.EntityAlreadyHasComponent("ScaleComponent")
             this.scale = { x, y }
-            mask |= SCALE
+            mask |= __SCALE__
             World.onComponentAdded(&this, Components.ScaleComponent)
             return &this
 
         def setScale(x:double,y:double):Entity*
-            if (mask & SCALE) == 0 do raise new Exception.EntityDoesNotHaveComponent("ScaleComponent")
+            if (mask & __SCALE__) == 0 do raise new Exception.EntityDoesNotHaveComponent("ScaleComponent")
             this.scale.x = x
             this.scale.y = y
             return &this
 
         def removeScale():Entity*
-            if (mask & SCALE) == 0 do raise new Exception.EntityDoesNotHaveComponent("ScaleComponent")
+            if (mask & __SCALE__) == 0 do raise new Exception.EntityDoesNotHaveComponent("ScaleComponent")
             this.scale = null
-            mask ^= SCALE
+            mask ^= __SCALE__
             World.onComponentRemoved(&this, Components.ScaleComponent)
             return &this
 
+        def hasSound():bool
+            return (mask & __SOUND__) != 0
+
         def addSound(sound:sdx.audio.Sound):Entity* 
-            if (mask & SOUND) != 0 do raise new Exception.EntityAlreadyHasComponent("SoundComponent")
+            if (mask & __SOUND__) != 0 do raise new Exception.EntityAlreadyHasComponent("SoundComponent")
             this.sound = { sound }
-            mask |= SOUND
+            mask |= __SOUND__
             World.onComponentAdded(&this, Components.SoundComponent)
             return &this
 
         def setSound(sound:sdx.audio.Sound):Entity*
-            if (mask & SOUND) == 0 do raise new Exception.EntityDoesNotHaveComponent("SoundComponent")
+            if (mask & __SOUND__) == 0 do raise new Exception.EntityDoesNotHaveComponent("SoundComponent")
             this.sound.sound = sound
             return &this
 
         def removeSound():Entity*
-            if (mask & SOUND) == 0 do raise new Exception.EntityDoesNotHaveComponent("SoundComponent")
+            if (mask & __SOUND__) == 0 do raise new Exception.EntityDoesNotHaveComponent("SoundComponent")
             this.sound = null
-            mask ^= SOUND
+            mask ^= __SOUND__
             World.onComponentRemoved(&this, Components.SoundComponent)
             return &this
 
+        def hasSprite():bool
+            return (mask & __SPRITE__) != 0
+
         def addSprite(sprite:sdx.graphics.s2d.Sprite):Entity* 
-            if (mask & SPRITE) != 0 do raise new Exception.EntityAlreadyHasComponent("SpriteComponent")
+            if (mask & __SPRITE__) != 0 do raise new Exception.EntityAlreadyHasComponent("SpriteComponent")
             this.sprite = { sprite }
-            mask |= SPRITE
+            mask |= __SPRITE__
             World.onComponentAdded(&this, Components.SpriteComponent)
             return &this
 
         def setSprite(sprite:sdx.graphics.s2d.Sprite):Entity*
-            if (mask & SPRITE) == 0 do raise new Exception.EntityDoesNotHaveComponent("SpriteComponent")
+            if (mask & __SPRITE__) == 0 do raise new Exception.EntityDoesNotHaveComponent("SpriteComponent")
             this.sprite.sprite = sprite
             return &this
 
         def removeSprite():Entity*
-            if (mask & SPRITE) == 0 do raise new Exception.EntityDoesNotHaveComponent("SpriteComponent")
+            if (mask & __SPRITE__) == 0 do raise new Exception.EntityDoesNotHaveComponent("SpriteComponent")
             this.sprite = null
-            mask ^= SPRITE
+            mask ^= __SPRITE__
             World.onComponentRemoved(&this, Components.SpriteComponent)
             return &this
 
+        def hasText():bool
+            return (mask & __TEXT__) != 0
+
         def addText(text:string,sprite:sdx.graphics.s2d.Sprite):Entity* 
-            if (mask & TEXT) != 0 do raise new Exception.EntityAlreadyHasComponent("TextComponent")
+            if (mask & __TEXT__) != 0 do raise new Exception.EntityAlreadyHasComponent("TextComponent")
             this.text = { text, sprite }
-            mask |= TEXT
+            mask |= __TEXT__
             World.onComponentAdded(&this, Components.TextComponent)
             return &this
 
         def setText(text:string,sprite:sdx.graphics.s2d.Sprite):Entity*
-            if (mask & TEXT) == 0 do raise new Exception.EntityDoesNotHaveComponent("TextComponent")
+            if (mask & __TEXT__) == 0 do raise new Exception.EntityDoesNotHaveComponent("TextComponent")
             this.text.text = text
             this.text.sprite = sprite
             return &this
 
         def removeText():Entity*
-            if (mask & TEXT) == 0 do raise new Exception.EntityDoesNotHaveComponent("TextComponent")
+            if (mask & __TEXT__) == 0 do raise new Exception.EntityDoesNotHaveComponent("TextComponent")
             this.text = null
-            mask ^= TEXT
+            mask ^= __TEXT__
             World.onComponentRemoved(&this, Components.TextComponent)
             return &this
 
+        def hasTint():bool
+            return (mask & __TINT__) != 0
+
         def addTint(r:int,g:int,b:int,a:int):Entity* 
-            if (mask & TINT) != 0 do raise new Exception.EntityAlreadyHasComponent("TintComponent")
+            if (mask & __TINT__) != 0 do raise new Exception.EntityAlreadyHasComponent("TintComponent")
             this.tint = { r, g, b, a }
-            mask |= TINT
+            mask |= __TINT__
             World.onComponentAdded(&this, Components.TintComponent)
             return &this
 
         def setTint(r:int,g:int,b:int,a:int):Entity*
-            if (mask & TINT) == 0 do raise new Exception.EntityDoesNotHaveComponent("TintComponent")
+            if (mask & __TINT__) == 0 do raise new Exception.EntityDoesNotHaveComponent("TintComponent")
             this.tint.r = r
             this.tint.g = g
             this.tint.b = b
@@ -415,21 +487,24 @@ namespace entitas
             return &this
 
         def removeTint():Entity*
-            if (mask & TINT) == 0 do raise new Exception.EntityDoesNotHaveComponent("TintComponent")
+            if (mask & __TINT__) == 0 do raise new Exception.EntityDoesNotHaveComponent("TintComponent")
             this.tint = null
-            mask ^= TINT
+            mask ^= __TINT__
             World.onComponentRemoved(&this, Components.TintComponent)
             return &this
 
+        def hasTween():bool
+            return (mask & __TWEEN__) != 0
+
         def addTween(min:double,max:double,speed:double,repeat:bool,active:bool):Entity* 
-            if (mask & TWEEN) != 0 do raise new Exception.EntityAlreadyHasComponent("TweenComponent")
+            if (mask & __TWEEN__) != 0 do raise new Exception.EntityAlreadyHasComponent("TweenComponent")
             this.tween = { min, max, speed, repeat, active }
-            mask |= TWEEN
+            mask |= __TWEEN__
             World.onComponentAdded(&this, Components.TweenComponent)
             return &this
 
         def setTween(min:double,max:double,speed:double,repeat:bool,active:bool):Entity*
-            if (mask & TWEEN) == 0 do raise new Exception.EntityDoesNotHaveComponent("TweenComponent")
+            if (mask & __TWEEN__) == 0 do raise new Exception.EntityDoesNotHaveComponent("TweenComponent")
             this.tween.min = min
             this.tween.max = max
             this.tween.speed = speed
@@ -438,28 +513,109 @@ namespace entitas
             return &this
 
         def removeTween():Entity*
-            if (mask & TWEEN) == 0 do raise new Exception.EntityDoesNotHaveComponent("TweenComponent")
+            if (mask & __TWEEN__) == 0 do raise new Exception.EntityDoesNotHaveComponent("TweenComponent")
             this.tween = null
-            mask ^= TWEEN
+            mask ^= __TWEEN__
             World.onComponentRemoved(&this, Components.TweenComponent)
             return &this
 
+        def hasVelocity():bool
+            return (mask & __VELOCITY__) != 0
+
         def addVelocity(x:double,y:double):Entity* 
-            if (mask & VELOCITY) != 0 do raise new Exception.EntityAlreadyHasComponent("VelocityComponent")
+            if (mask & __VELOCITY__) != 0 do raise new Exception.EntityAlreadyHasComponent("VelocityComponent")
             this.velocity = { x, y }
-            mask |= VELOCITY
+            mask |= __VELOCITY__
             World.onComponentAdded(&this, Components.VelocityComponent)
             return &this
 
         def setVelocity(x:double,y:double):Entity*
-            if (mask & VELOCITY) == 0 do raise new Exception.EntityDoesNotHaveComponent("VelocityComponent")
+            if (mask & __VELOCITY__) == 0 do raise new Exception.EntityDoesNotHaveComponent("VelocityComponent")
             this.velocity.x = x
             this.velocity.y = y
             return &this
 
         def removeVelocity():Entity*
-            if (mask & VELOCITY) == 0 do raise new Exception.EntityDoesNotHaveComponent("VelocityComponent")
+            if (mask & __VELOCITY__) == 0 do raise new Exception.EntityDoesNotHaveComponent("VelocityComponent")
             this.velocity = null
-            mask ^= VELOCITY
+            mask ^= __VELOCITY__
             World.onComponentRemoved(&this, Components.VelocityComponent)
             return &this
+
+
+    /**
+     *  Component bit masks
+     */
+    const __BACKGROUND__:uint64 = 0x0001
+    const __BOUNDS__:uint64 = 0x0002
+    const __BULLET__:uint64 = 0x0004
+    const __ENEMY1__:uint64 = 0x0008
+    const __ENEMY2__:uint64 = 0x0010
+    const __ENEMY3__:uint64 = 0x0020
+    const __EXPIRES__:uint64 = 0x0040
+    const __HEALTH__:uint64 = 0x0080
+    const __HUD__:uint64 = 0x0100
+    const __INDEX__:uint64 = 0x0200
+    const __LAYER__:uint64 = 0x0400
+    const __POSITION__:uint64 = 0x0800
+    const __SCALE__:uint64 = 0x1000
+    const __SOUND__:uint64 = 0x2000
+    const __SPRITE__:uint64 = 0x4000
+    const __TEXT__:uint64 = 0x8000
+    const __TINT__:uint64 = 0x10000
+    const __TWEEN__:uint64 = 0x20000
+    const __VELOCITY__:uint64 = 0x40000
+    const __ACTIVE__:uint64 = 0x8000000000000000
+    /**
+    * Component names
+    */
+    const ComponentString: array of string = {
+        "",
+        "BackgroundComponent",
+        "BoundsComponent",
+        "BulletComponent",
+        "Enemy1Component",
+        "Enemy2Component",
+        "Enemy3Component",
+        "ExpiresComponent",
+        "HealthComponent",
+        "HudComponent",
+        "IndexComponent",
+        "LayerComponent",
+        "PositionComponent",
+        "ScaleComponent",
+        "SoundComponent",
+        "SpriteComponent",
+        "TextComponent",
+        "TintComponent",
+        "TweenComponent",
+        "VelocityComponent"
+
+    }
+
+    /**
+    * Components
+    */
+    enum Components
+        BackgroundComponent = 1
+        BoundsComponent
+        BulletComponent
+        Enemy1Component
+        Enemy2Component
+        Enemy3Component
+        ExpiresComponent
+        HealthComponent
+        HudComponent
+        IndexComponent
+        LayerComponent
+        PositionComponent
+        ScaleComponent
+        SoundComponent
+        SpriteComponent
+        TextComponent
+        TintComponent
+        TweenComponent
+        VelocityComponent
+        COUNT = 19
+
+

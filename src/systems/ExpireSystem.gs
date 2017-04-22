@@ -20,8 +20,11 @@ namespace demo
             group = world.getGroup(Matcher.AllOf({Components.ExpiresComponent}))
 
 
-        def execute()
+        def initialize()
+            pass
+
+        def execute(delta:double)
             for var entity in group.entities do if entity.isActive()
-                var exp = entity.expires.value - game.delta
+                var exp = entity.expires.value - delta
                 entity.expires.value = exp
                 if (entity.expires.value < 0) do world.deleteEntity(entity)

@@ -10,6 +10,7 @@
     "components": 64
   },
   "components": {
+    "Background": false,
     "Bounds": [
       "x:int",
       "y:int",
@@ -17,13 +18,19 @@
       "h:int"
     ],
     "Bullet": false,
-    "Enemy": false,
+    "Enemy1": false,
+    "Enemy2": false,
+    "Enemy3": false,
     "Expires": [
       "value:double"
     ],
     "Health": [
       "current:double",
       "maximum:double"
+    ],
+    "Hud": false,
+    "Index": [
+      "value:int"
     ],
     "Layer": [
       "value:int"
@@ -79,19 +86,24 @@
   },
   "entities": {},
   "flags": {
-    "BOUNDS": "0x0001",
-    "BULLET": "0x0002",
-    "ENEMY": "0x0004",
-    "EXPIRES": "0x0008",
-    "HEALTH": "0x0010",
-    "LAYER": "0x0020",
-    "POSITION": "0x0040",
-    "SCALE": "0x0080",
-    "SOUND": "0x0100",
-    "SPRITE": "0x0200",
-    "TEXT": "0x0400",
-    "TINT": "0x0800",
-    "TWEEN": "0x1000",
-    "VELOCITY": "0x2000"
+    "BACKGROUND": "0x0001",
+    "BOUNDS": "0x0002",
+    "BULLET": "0x0004",
+    "ENEMY1": "0x0008",
+    "ENEMY2": "0x0010",
+    "ENEMY3": "0x0020",
+    "EXPIRES": "0x0040",
+    "HEALTH": "0x0080",
+    "HUD": "0x0100",
+    "INDEX": "0x0200",
+    "LAYER": "0x0400",
+    "POSITION": "0x0800",
+    "SCALE": "0x1000",
+    "SOUND": "0x2000",
+    "SPRITE": "0x4000",
+    "TEXT": "0x8000",
+    "TINT": "0x10000",
+    "TWEEN": "0x20000",
+    "VELOCITY": "0x40000"
   }
 }

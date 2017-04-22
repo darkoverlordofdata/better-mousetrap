@@ -19,7 +19,10 @@ namespace demo
             this.world = world
             group = world.getGroup(Matcher.AllOf({Components.VelocityComponent}))
 
-        def execute()
+        def initialize()
+            pass
+
+        def execute(delta:double)
             for var entity in group.entities do if entity.isActive()
                 case entity.pool
                     when Pool.ENEMY1

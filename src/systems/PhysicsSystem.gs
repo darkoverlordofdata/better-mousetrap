@@ -20,10 +20,12 @@ namespace demo
             group = world.getGroup(Matcher.AllOf({Components.VelocityComponent}))
 
 
-        def execute()
+        def initialize()
+            pass
+
+        def execute(delta:double)
             for var entity in group.entities do if entity.isActive() 
-                // entity.pos = entity.position.add(entity.velocity.mul(game.delta))
-                entity.position.x += entity.velocity.x * game.delta
-                entity.position.y += entity.velocity.y * game.delta
+                entity.position.x += entity.velocity.x * delta
+                entity.position.y += entity.velocity.y * delta
 
 

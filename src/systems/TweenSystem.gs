@@ -19,10 +19,13 @@ namespace demo
             this.world = world
             group = world.getGroup(Matcher.AllOf({Components.TweenComponent}))
 
-        def execute()
+        def initialize()
+            pass
+
+        def execute(delta:double)
             for var entity in group.entities do if entity.isActive() 
-                var x = entity.scale.x + (entity.tween.speed * game.delta)
-                var y = entity.scale.y + (entity.tween.speed * game.delta)
+                var x = entity.scale.x + (entity.tween.speed * delta)
+                var y = entity.scale.y + (entity.tween.speed * delta)
                 var active = entity.tween.active
 
                 if x > entity.tween.max 

@@ -4,13 +4,19 @@ uses sdx.graphics.s2d
 uses entitas
 
 
-namespace ShmupWarz
+namespace demo
 
-    class HudRenderSystem : Object implements ISystem
+    class HudSystem : Object implements ISystem
 
-        const ACTIVE_ENTITIES : string  = "Active entities:         %3d"
-        const TOTAL_RETAINED : string   = "Total reusable:          %3d"
-        const TOTAL_REUSABLE : string   = "Total retained:          %3d"
+        const desc: array of string = {
+            "Bullet:          %3d/%3d",
+            "Enemy1:       %3d/%3d",
+            "Enemy2:       %3d/%3d",
+            "Enemy3:       %3d/%3d",
+            "Explosion:     %3d/%3d",
+            "Bang:           %3d/%3d",
+            "Particle:       %3d/%3d"
+        }
 
         world:World
         game:ShmupWarz
@@ -20,31 +26,27 @@ namespace ShmupWarz
         construct(game:ShmupWarz, factory:Factory)
             this.game = game
             this.factory = factory
-            
 
         def setWorld(world:World)
+            group = world.getGroup(new Matcher({
+                (Matcher)Matcher.NoneOf({ Components.SpriteComponent }),
+                (Matcher)Matcher.AllOf({ Components.TextComponent, Components.IndexComponent })
+            }))
             this.world = world
 
-        // def initialize()
-        //     Sdx.app.sprites.add(activeEntities = createText(0, 40, ACTIVE_ENTITIES.printf(world.count)))
-        //     Sdx.app.sprites.add(totalRetained = createText(0, 60, TOTAL_RETAINED.printf(world.reusableEntitiesCount)))
-        //     Sdx.app.sprites.add(totalReusable = createText(0, 80, TOTAL_REUSABLE.printf(world.retainedEntitiesCount)))
+        def initialize()
+            factory.newHud(Pool.BULLET,     0, 300, desc[0].printf(0, 0))
+            factory.newHud(Pool.ENEMY1,     0, 320, desc[1].printf(0, 0))
+            factory.newHud(Pool.ENEMY2,     0, 340, desc[2].printf(0, 0))
+            factory.newHud(Pool.ENEMY3,     0, 360, desc[3].printf(0, 0))
+            factory.newHud(Pool.EXPLOSION,  0, 380, desc[4].printf(0, 0))
+            factory.newHud(Pool.BANG,       0, 400, desc[5].printf(0, 0))
+            factory.newHud(Pool.PARTICLE,   0, 420, desc[6].printf(0, 0))
 
-        def execute()
-            // setText(activeEntities, ACTIVE_ENTITIES.printf(world.count))
-            // setText(totalRetained, TOTAL_RETAINED.printf(world.retainedEntitiesCount))
-            // setText(totalReusable, TOTAL_REUSABLE.printf(world.reusableEntitiesCount))
-            pass
-
-        // def createText(x: int, y: int, text: string): Sprite
-        //     var sprite = new Sprite.text(text, Sdx.app.font, sdx.graphics.Color.White)
-        //     sprite.x = x
-        //     sprite.y = y
-        //     sprite.layer = Layer.HUD
-        //     sprite.centered = false
-        //     return sprite
-
-        // def setText(sprite: Sprite, text: string)
-        //     sprite.setText(text, Sdx.app.font, sdx.graphics.Color.White)
+        def execute(delta:double)
+            var i=0
+            for var e in group.entities
+                e.text.sprite.setText(desc[i++].printf(world.cache[e.index.value].size, world.bufsiz[e.index.value]),
+                    Sdx.app.font, sdx.graphics.Color.Bisque)
 
 

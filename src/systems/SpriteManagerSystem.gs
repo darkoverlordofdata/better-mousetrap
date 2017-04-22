@@ -20,10 +20,17 @@ namespace demo
             this.world = world
             world.setEntityRemovedListener(this)
 
-        def execute()
+        def initialize()
+            pass
+
+        def execute(delta:double)
             pass
             
         def entityAdded(e:Entity*)
+            if !e.hasSprite() // just add it to the end of the list
+                game.sprites.add(e)
+                return
+                
             var layer = (int)e.layer.value
             e.sprite.sprite.layer = layer
             

@@ -39,8 +39,11 @@ namespace demo
         def setWorld(world:World)
             this.world = world
 
-        def execute()
-            enemyT1 = spawnEnemy(game.delta, enemyT1, 1)
-            enemyT2 = spawnEnemy(game.delta, enemyT2, 2)
-            enemyT3 = spawnEnemy(game.delta, enemyT3, 3)
+        def initialize()
+            pass
+
+        def execute(delta:double)
+            enemyT1 = spawnEnemy(delta, enemyT1, 1)
+            enemyT2 = spawnEnemy(delta, enemyT2, 2)
+            enemyT3 = spawnEnemy(delta, enemyT3, 3)
 

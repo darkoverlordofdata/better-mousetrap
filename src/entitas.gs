@@ -30,7 +30,8 @@ namespace entitas
 
     interface ISystem: Object
         def abstract setWorld(world:World)
-        def abstract execute()
+        def abstract initialize()
+        def abstract execute(delta:double)
 
     interface EntityRemovedListener : Object
         def abstract entityRemoved(e:Entity*)
@@ -58,6 +59,7 @@ namespace entitas
     class Group : Object
         matcher:IMatcher
         entities:list of Entity* = new list of Entity*
+        singleEntityCache: Entity*
         
         construct(matcher:IMatcher)
             this.matcher = matcher
@@ -69,13 +71,25 @@ namespace entitas
 
         /** Add entity to group and raise events */
         def handleEntity(entity : Entity*, index : Components)
-            if matcher.matches(entity)
-                entities.add(entity) //World.onComponentAdded(entity, index)
+            if matcher.matches(entity) do entities.add(entity) 
+            else do entities.remove(entity) 
+
+        def containsEntity(entity : Entity*) : bool
+            return entities.contains(entity)
+
+        def getSingleEntity(): Entity* 
+            var c = entities.size
+            if c == 1
+                return entities[0]
+            else if c == 0
+                return null
             else
-                entities.remove(entity) //World.onComponentRemoved(entity, index)
+                raise new Exception.SingleEntity(matcher.toString())
+                        
 
     /**
      * Match entities by component
+     * complile list of components to bit array for fast comparison
      */
     class Matcher : Object implements IMatcher, IAllOfMatcher, IAnyOfMatcher
 
@@ -96,8 +110,7 @@ namespace entitas
          * @name entitas.Matcher#indices */
         prop readonly indices : array of int
             get
-                if _indices == null
-                    _indices = mergeIndices()
+                if _indices == null do _indices = mergeIndices()
                 return _indices
 
         /**
@@ -121,11 +134,31 @@ namespace entitas
          * @name entitas.Matcher#noneOfIndices */
         prop readonly noneOfIndices : array of int
 
+        _noneOfMask: uint64
+
         _indices        : array of int
         _toStringCache  : string
 
-        construct()
+        /**
+         *  clone/merge 1 or more existing matchers
+         */
+        construct(matchers:array of Matcher=null)
             _id = (Matcher.uniqueId++).to_string()
+            if matchers != null
+                var allOf = new array of int[0]
+                var anyOf = new array of int[0]
+                var noneOf = new array of int[0]
+                for var matcher in matchers
+                    _allOfMask |= matcher._allOfMask
+                    _anyOfMask |= matcher._anyOfMask
+                    _noneOfMask |= matcher._noneOfMask
+                    for var i in matcher.allOfIndices do allOf += i
+                    for var i in matcher.anyOfIndices do anyOf += i
+                    for var i in matcher.noneOfIndices do noneOf += i
+
+                _allOfIndices = Matcher.distinctIndices(allOf)
+                _anyOfIndices = Matcher.distinctIndices(anyOf)
+                _noneOfIndices = Matcher.distinctIndices(noneOf)
 
         /**
          * Matches anyOf the components/indices specified
@@ -149,23 +182,14 @@ namespace entitas
 
         /**
          * Check if the entity matches this matcher
-         * @param entitas.IEntity entity
+         * @param entitas.IEntity entity    
          * @returns boolean
-         *
-         *  TODO:
-         *      matcher should cache a bitmask to compare to entity->mask
-         *
          */
         def matches(entity : Entity*) : bool
-
-            var mask = entity.mask ^ 0x8000000000000000
-            var matchesAllOf = _allOfIndices == null ? true : (mask & _allOfMask) == _allOfMask 
-            var matchesAnyOf = _anyOfIndices == null ? true : (mask & _anyOfMask) != 0
-
-
-            // var matchesAllOf = _allOfIndices == null ? true : entity.hasComponents(_allOfIndices)
-            // var matchesAnyOf = _anyOfIndices == null ? true : entity.hasAnyComponent(_anyOfIndices)
-            var matchesNoneOf = true //_noneOfIndices == null ? true : !entity.hasAnyComponent(_noneOfIndices)
+            var mask = entity.mask ^ __ACTIVE__ 
+            var matchesAllOf  = _allOfMask  == 0 ? true : (mask & _allOfMask) == _allOfMask 
+            var matchesAnyOf  = _anyOfMask  == 0 ? true : (mask & _anyOfMask) != 0
+            var matchesNoneOf = _noneOfMask == 0 ? true : (mask & _noneOfMask) == 0
             return matchesAllOf && matchesAnyOf && matchesNoneOf
 
         /**
@@ -176,16 +200,13 @@ namespace entitas
 
             var indicesList = new list of int
             if _allOfIndices != null
-                for var i in _allOfIndices
-                    indicesList.add(i)
+                for var i in _allOfIndices do indicesList.add(i)
 
             if _anyOfIndices != null
-                for var i in _anyOfIndices
-                    indicesList.add(i)
+                for var i in _anyOfIndices do indicesList.add(i)
 
             if _noneOfIndices != null
-                for var i in _noneOfIndices
-                    indicesList.add(i)
+                for var i in _noneOfIndices do indicesList.add(i)
 
             return Matcher.distinctIndices(listToArray(indicesList))
 
@@ -223,7 +244,6 @@ namespace entitas
             for var index in indexArray
                 sb += ComponentString[index].replace("Component", "")
             return string.joinv(",", sb)
-            return ""
 
         def static listToArray(l : list of int) : array of int
             var a = new array of int[l.size]
@@ -263,6 +283,16 @@ namespace entitas
             return listToArray(indices)
 
         /**
+         * Matches noneOf the components/indices specified
+         * @params Array<entitas.IMatcher>|Array<number> args
+         * @returns entitas.Matcher
+         */
+        def static NoneOf(args : array of int) : IMatcher
+            var matcher = new Matcher()
+            matcher._noneOfIndices = Matcher.distinctIndices(args)
+            matcher._noneOfMask = Matcher.buildMask(matcher._noneOfIndices)
+            return matcher
+        /**
          * Matches allOf the components/indices specified
          * @params Array<entitas.IMatcher>|Array<number> args
          * @returns entitas.Matcher
@@ -286,7 +316,7 @@ namespace entitas
 
         def static buildMask(indices: array of int): uint64
             accume:uint64 = 0
-            for var index in indices do accume |= POW2[index]
+            for var index in indices do accume |= __POW2__[index]
             return accume
 
     /**
@@ -294,14 +324,24 @@ namespace entitas
      */
     class World : Object
         instance    : static World
+        running     : bool
         pool        : array of Entity
         cache       : array of list of Entity* 
+        bufsiz       : array of int
         systems     : list of ISystem = new list of ISystem
         listener    : EntityRemovedListener
         id          : private int = 0
         groups      : dict of string, Group = new dict of string, Group
+        k           : int
+        t           : double
+        t1          : double = 0.0
+        t2          : double = 0.0
+        t3          : double = 0.0
+        profile     : bool = false
+        freq        : double = SDL.Timer.get_performance_frequency()
 
-        construct()
+        construct(profile:bool=false)
+            this.profile = profile
             World.instance = this
 
         def static onComponentAdded(e:Entity*, c:Components)
@@ -317,10 +357,13 @@ namespace entitas
         def setPool(size:int, count:int, buffers: array of Buffer)
             pool = new array of Entity[size]
             cache = new array of list of Entity*[count]
+            bufsiz = new array of int[count]
             for var i=0 to (count-1) do cache[i] = new list of Entity*
             for var i=0 to (buffers.length)
+                bufsiz[buffers[i].pool] = buffers[i].size
                 for var k=1 to (buffers[i].size)  
                     cache[buffers[i].pool].add(buffers[i].factory())
+                print "%d) %d/%d", i, buffers[i].size, cache[buffers[i].pool].size
         
 
         def setEntityRemovedListener(listener:EntityRemovedListener)
@@ -333,6 +376,7 @@ namespace entitas
         def deleteEntity(entity:Entity*)
             entity.setActive(false)
             listener.entityRemoved(entity)
+            //print "how did i get here"
             cache[entity.pool].add(entity)
 
         def add(system: ISystem):World
@@ -340,8 +384,29 @@ namespace entitas
             systems.add(system)
             return this
 
-        def execute()
-            for var sys in systems do sys.execute()            
+        def initialize()
+            for var system in systems do system.initialize()            
+            running = true
+
+        def execute(delta:double)
+            if !running do return
+            if profile do t1 = (double)SDL.Timer.get_performance_counter()/freq
+
+            for var system in systems do system.execute(delta)            
+            
+            if profile
+                t2 = (double)SDL.Timer.get_performance_counter()/freq
+                t3 = t2 - t1
+                t = t + t3
+                k += 1
+                if k == 1000
+                    k = 0
+                    t = t / 1000.0
+                    print "%f", t
+                    t = 0
+
+
+
 
         def getGroup(matcher : IMatcher) : Group
             group:Group
@@ -356,9 +421,9 @@ namespace entitas
             return group
 
     /**
-     * Bit array mask
+     * Bit array masks
      */
-    const POW2:array of uint64 = {
+    const __POW2__:array of uint64 = {
         0x0000000000000000,
         0x0000000000000001,
         0x0000000000000002,

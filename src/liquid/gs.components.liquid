@@ -6,22 +6,6 @@
 [indent=4]
 namespace entitas
 
-{% for flag in flags %}    const {{ flag.key }}:uint64 = {{ flag.value }}
-{% endfor %}
-    const ACTIVE:uint64 = 0x8000000000000000
-    /**
-    * Components
-    */
-    const ComponentString: array of string = {
-        "CoreComponent",
-{% for component in components %}        "{{ component.key }}Component",
-{% endfor %}        ""
-    }
-
-    enum Components
-        CoreComponent
-{% for component in components %}        {{ component.key }}Component
-{% endfor %}        COUNT
 {% for component in components %}
     struct {{ component.key }}
 {% if component.value == false %}        active : bool
@@ -35,14 +19,14 @@ namespace entitas
 {% for component in components %}        {{ component.key | camel }}   : {{ component.key }}?
 {% endfor %}
         def hasComponent(index : int) : bool
-            return (POW2[index] & mask) != 0
+            return (__POW2__[index] & mask) != 0
 
         def hasComponents(indices : array of int) : bool
-            for var index in indices do if (POW2[index] & mask) == 0 do return false
+            for var index in indices do if (__POW2__[index] & mask) == 0 do return false
             return true
 
         def hasAnyComponent(indices : array of int) : bool
-            for var index in indices do if (POW2[index] & mask) != 0 do return true
+            for var index in indices do if (__POW2__[index] & mask) != 0 do return true
             return false
 
         def setId(id:int):Entity*
@@ -54,8 +38,9 @@ namespace entitas
             return &this
 
         def setActive(active:bool):Entity*
-            if active do mask |= ACTIVE
-            else do mask ^= ACTIVE
+            if ((mask & __ACTIVE__) == __ACTIVE__ ) == active do return &this
+            if active do mask |= __ACTIVE__
+            else do mask ^= __ACTIVE__
             return &this
 
         def setPool(pool:int):Entity*
@@ -63,7 +48,18 @@ namespace entitas
             return &this
 
         def isActive():bool
-            return (mask & ACTIVE) == ACTIVE
+            return (mask & __ACTIVE__) == __ACTIVE__
+
+        def toString():string
+            var sb = new StringBuilder()
+            sb.append(@"$id: ($name) ")
+            var seperator = false
+            for var i = 1 to Components.COUNT
+                if hasComponent(i)
+                    if seperator do sb.append(", ")
+                    sb.append(ComponentString[i].replace("Component", ""))
+                    seperator = true
+            return sb.str
 
         /**
          * Components:
@@ -72,11 +68,11 @@ namespace entitas
         def set{{ component.key }}(value:bool):Entity*
             if value
                 this.{{ component.key | camel }} = { true }
-                mask |= {{ component.key | upcase }}
+                mask |= __{{ component.key | upcase }}__
                 World.onComponentAdded(&this, Components.{{ component.key }}Component)
             else
                 this.{{ component.key | camel }} = null
-                mask ^= {{ component.key | upcase }}
+                mask ^= __{{ component.key | upcase }}__
                 World.onComponentRemoved(&this, Components.{{ component.key }}Component)
             return &this
 
@@ -84,22 +80,48 @@ namespace entitas
             if this.{{ component.key | camel }} == null do return false
             else do return true
 {% else %}
+        def has{{ component.key }}():bool
+            return (mask & __{{ component.key | upcase }}__) != 0
+
         def add{{ component.key }}({{ component.value }}):Entity* 
-            if (mask & {{ component.key | upcase }}) != 0 do raise new Exception.EntityAlreadyHasComponent("{{ component.key }}Component")
+            if (mask & __{{ component.key | upcase }}__) != 0 do raise new Exception.EntityAlreadyHasComponent("{{ component.key }}Component")
             this.{{ component.key | camel }} = { {{ component.value | paramsonly }} }
-            mask |= {{ component.key | upcase }}
+            mask |= __{{ component.key | upcase }}__
             World.onComponentAdded(&this, Components.{{ component.key }}Component)
             return &this
 
         def set{{ component.key }}({{ component.value }}):Entity*
-            if (mask & {{ component.key | upcase }}) == 0 do raise new Exception.EntityDoesNotHaveComponent("{{ component.key }}Component")
+            if (mask & __{{ component.key | upcase }}__) == 0 do raise new Exception.EntityDoesNotHaveComponent("{{ component.key }}Component")
             {% for field in component.value %}this.{{ component.key | camel }}.{{ field | property }} = {{ field | property | camel }}
             {% endfor %}return &this
 
         def remove{{ component.key }}():Entity*
-            if (mask & {{ component.key | upcase }}) == 0 do raise new Exception.EntityDoesNotHaveComponent("{{ component.key }}Component")
+            if (mask & __{{ component.key | upcase }}__) == 0 do raise new Exception.EntityDoesNotHaveComponent("{{ component.key }}Component")
             this.{{ component.key | camel }} = null
-            mask ^= {{ component.key | upcase }}
+            mask ^= __{{ component.key | upcase }}__
             World.onComponentRemoved(&this, Components.{{ component.key }}Component)
             return &this
 {% endif %}{% endfor %}
+
+    /**
+     *  Component bit masks
+     */
+{% for flag in flags %}    const __{{ flag.key }}__:uint64 = {{ flag.value }}
+{% endfor %}    const __ACTIVE__:uint64 = 0x8000000000000000
+    /**
+    * Component names
+    */
+    const ComponentString: array of string = {
+        "",
+{% for component in components %}        "{{ component.key }}Component"{% unless forloop.last %},{% endunless %}
+{% endfor %}
+    }
+
+    /**
+    * Components
+    */
+    enum Components
+{% for component in components %}        {{ component.key }}Component{% if forloop.first %} = 1{% endif %}{% if forloop.last %}
+        COUNT = {{ forloop.length }}{% endif %}
+{% endfor %}
+

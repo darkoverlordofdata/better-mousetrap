@@ -33,7 +33,9 @@ fi
 #
 npm run entitas -- create -c Bounds x:int y:int w:int h:int
 npm run entitas -- create -c Bullet
-npm run entitas -- create -c Enemy
+npm run entitas -- create -c Enemy1
+npm run entitas -- create -c Enemy2
+npm run entitas -- create -c Enemy3
 npm run entitas -- create -c Expires value:double
 npm run entitas -- create -c Health current:double maximum:double
 npm run entitas -- create -c Layer value:int
