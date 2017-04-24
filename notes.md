@@ -32,7 +32,7 @@ avg usec per frame after 10,000 frames:
     gjs             0.005094
 
 ##### data-locality
-
+    emcc            0.000150 
     cpp             0.000040
     vala            0.000042
     vala+sdx        0.000098   
