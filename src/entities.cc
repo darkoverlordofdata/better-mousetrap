@@ -1,23 +1,9 @@
 /** 
- * Entity Factory
+ * Entity Factory implementation
  */
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-#include <cstdio>
-#include <map>
-#include <string>
-#include <iostream>
-#include <ctime>
-#include <chrono>
-#include "components.h"
-#include "entity.h"
-#include "game.h"
-#include "systems.h"
-#include "entities.h"
+#include "shmupwarz.h"
 
 int uniqueId = 0;
-
-
 
 void createBackground(SDL_Renderer* renderer, std::vector<Entity>* entities, std::string path){
     entities->push_back(Entity(uniqueId++, "background", true));
@@ -40,6 +26,8 @@ void initBackground(SDL_Renderer* renderer, Entity* entity, std::string path) {
     entity->scale.x = scale;
     entity->scale.y = scale;
     entity->active = true;
+
+    entity->mask |= __ACTIVE__;
     SDL_FreeSurface(surface);
 
 }
@@ -83,27 +71,19 @@ void initBullet(SDL_Renderer* renderer, Entity* entity, std::string path) {
     entity->bounds.h = surface->h*scale; 
     entity->scale.x = scale;
     entity->scale.y = scale;
+    entity->addExpires(1.0);
+    entity->addHealth(2, 2);
+    entity->addTint(0xd2, 0xfa, 0x00, 0xff);
+    entity->addVelocity(0, -800);
+    entity->addSound(Mix_LoadWAV("assets/sounds/pew.wav"));
     SDL_FreeSurface(surface);
 }
 
 void refreshBullet(Entity* entity, int x, int y) {
     entity->position.x = x;
     entity->position.y = y;
-    entity->expires = 1.0;
-    //entity->sound = Effect::PEW;
-    // entity->health = new Health(2, 2);
-    entity->health.current = 2;
-    entity->health.maximum = 2;
-    entity->hasHealth = true;
-    // entity->tint = new Color(0xd2, 0xfa, 0x00, 0xffa);
-    entity->tint.r = 0xd2;
-    entity->tint.g = 0xfa;
-    entity->tint.b = 0x00;
-    entity->tint.a = 0xff;
-    entity->hasTint = true;
-    entity->velocity.x = 0;
-    entity->velocity.y = -800;
-    entity->hasVelocity = true;
+    entity->setExpires(1.0);
+    entity->setHealth(2, 2);
     entity->active = true;
 }
 
@@ -124,19 +104,16 @@ void initEnemy1(SDL_Renderer* renderer, Entity* entity, std::string path) {
     entity->bounds.h = surface->h*scale; 
     entity->scale.x = scale;
     entity->scale.y = scale;
+    entity->addHealth(10, 10);
+    entity->addVelocity(0, 40);
     SDL_FreeSurface(surface);
 }
 void refreshEnemy1(Entity* entity, int x, int y) {
     entity->position.x = x;
     entity->position.y = y;
-    // entity->health = new Health(10, 10);
-    entity->health.current = 10;
-    entity->health.maximum = 10;
-    entity->hasHealth = true;
-    entity->velocity.x = 0;
-    entity->velocity.y = 40;
-    // entity->velocity = new Vector2d(0, 40);
-    entity->hasVelocity = true;
+    entity->setHealth(10, 10);
+    entity->setVelocity(0, 40);
+
     entity->active = true;
 }
 
@@ -157,19 +134,15 @@ void initEnemy2(SDL_Renderer* renderer, Entity* entity, std::string path) {
     entity->bounds.h = surface->h*scale; 
     entity->scale.x = scale;
     entity->scale.y = scale;
+    entity->addHealth(20, 20);
+    entity->addVelocity(0, 30);
     SDL_FreeSurface(surface);
 }
 void refreshEnemy2(Entity* entity, int x, int y){
     entity->position.x = x;
     entity->position.y = y;
-    // entity->health = new Health(20, 20);
-    entity->health.current = 20;
-    entity->health.maximum = 20;
-    entity->hasHealth = true;
-    entity->velocity.x = 0;
-    entity->velocity.y = 30;
-    // entity->velocity = new Vector2d(0, 30);
-    entity->hasVelocity = true;
+    entity->setHealth(20, 20);
+    entity->setVelocity(0, 30);
     entity->active = true;
 }
 void createEnemy3(SDL_Renderer* renderer, std::vector<Entity>* entities, std::string path){
@@ -189,19 +162,15 @@ void initEnemy3(SDL_Renderer* renderer, Entity* entity, std::string path) {
     entity->bounds.h = surface->h*scale; 
     entity->scale.x = scale;
     entity->scale.y = scale;
+    entity->addHealth(60, 60);
+    entity->addVelocity(0, 20);
     SDL_FreeSurface(surface);
 }
 void refreshEnemy3(Entity* entity, int x, int y){
     entity->position.x = x;
     entity->position.y = y;
-    // entity->health = new Health(60, 60);
-    entity->health.current = 60;
-    entity->health.maximum = 60;
-    entity->hasHealth = true;
-    entity->velocity.x = 0;
-    entity->velocity.y = 20;
-    // entity->velocity = new Vector2d(0, 20);
-    entity->hasVelocity = true;
+    entity->setHealth(60, 60);
+    entity->setVelocity(0, 20);
     entity->active = true;
 }
 
@@ -222,6 +191,10 @@ void initExplosion(SDL_Renderer* renderer, Entity* entity, std::string path) {
     entity->bounds.h = surface->h*scale; 
     entity->scale.x = scale;
     entity->scale.y = scale;
+    entity->addTween(scale/100.0, scale, -3, false, true);
+    entity->addTint(0xd2, 0xfa, 0xd2, 0xfa);
+    entity->addExpires(0.2);
+    entity->addSound(Mix_LoadWAV("assets/sounds/asplode.wav"));
     SDL_FreeSurface(surface);
 }
 void refreshExplosion(Entity* entity, int x, int y){
@@ -232,22 +205,8 @@ void refreshExplosion(Entity* entity, int x, int y){
     entity->bounds.y = y; 
     entity->scale.x = scale;
     entity->scale.y = scale;
-    //entity->sound = Effect::ASPLODE;
-    //entity->tween = new Tween(scale/100.0, scale, -3, false, true);
-    entity->tween.min = scale/100.0;
-    entity->tween.max = scale;
-    entity->tween.speed = -3;
-    entity->tween.repeat = false;
-    entity->tween.active = true;
-    entity->hasTween = true;
-    // entity->tint = new Color(0xd2, 0xfa, 0xd2, 0xfa);
-    entity->tint.r = 0xd2;
-    entity->tint.g = 0xfa;
-    entity->tint.b = 0xd2;
-    entity->tint.a = 0xfa;
-    entity->hasTint = true;
-    entity->expires = 0.2;
-    entity->hasExpires = true;
+    entity->setTween(scale/100.0, scale, -3, false, true);
+    entity->setExpires(0.2);
     entity->active = true;
 }
 void createBang(SDL_Renderer* renderer, std::vector<Entity>* entities, std::string path){
@@ -267,6 +226,10 @@ void initBang(SDL_Renderer* renderer, Entity* entity, std::string path) {
     entity->bounds.h = surface->h*scale; 
     entity->scale.x = scale;
     entity->scale.y = scale;
+    entity->addTween(scale/100.0, scale, -3, false, true);
+    entity->addTint(0xd2, 0xfa, 0xd2, 0xfa);
+    entity->addExpires(0.2);
+    entity->addSound(Mix_LoadWAV("assets/sounds/smallasplode.wav"));
     SDL_FreeSurface(surface);
 }
 void refreshBang(Entity* entity, int x, int y){
@@ -277,23 +240,8 @@ void refreshBang(Entity* entity, int x, int y){
     entity->bounds.y = y; 
     entity->scale.x = scale;
     entity->scale.y = scale;
-    //entity->sound = Effect::SMALLASPLODE;
-    // entity->tween = new Tween(scale/100.0, scale, -3, false, true);
-    entity->tween.min = scale/100.0;
-    entity->tween.max = scale;
-    entity->tween.speed = -3;
-    entity->tween.repeat = false;
-    entity->tween.active = true;
-    entity->hasTween = true;
-    entity->hasTween = true;
-    // entity->tint = new Color(0xd2, 0xfa, 0xd2, 0xfa);
-    entity->tint.r = 0xd2;
-    entity->tint.g = 0xfa;
-    entity->tint.b = 0xd2;
-    entity->tint.a = 0xfa;
-    entity->hasTint = true;
-    entity->expires = 0.2;
-    entity->hasExpires = true;
+    entity->setTween(scale/100.0, scale, -3, false, true);
+    entity->setExpires(0.2);
     entity->active = true;
 }
 void createParticle(SDL_Renderer* renderer, std::vector<Entity>* entities, std::string path){
@@ -313,6 +261,9 @@ void initParticle(SDL_Renderer* renderer, Entity* entity, std::string path) {
     entity->bounds.h = surface->h*scale; 
     entity->scale.x = scale;
     entity->scale.y = scale;
+    entity->addVelocity(0, 0);
+    entity->addTint(0xfa, 0xfa, 0xd2, 0xff);
+    entity->addExpires(0.75);
     SDL_FreeSurface(surface);
 }
 void refreshParticle(Entity* entity, int x, int y){
@@ -322,24 +273,15 @@ void refreshParticle(Entity* entity, int x, int y){
     double velocityX = magnitude * cos(radians);
     double velocityY = magnitude * sin(radians);
     double scale = (double)(std::rand() % 10) / 10.0;
-    // std::cout << velocityX << ", " << velocityY << "\n" << std::flush;
     entity->position.x = x;
     entity->position.y = y;
     entity->bounds.x = x; 
     entity->bounds.y = y; 
     entity->scale.x = scale;
     entity->scale.y = scale;
-    entity->velocity.x = velocityX;
-    entity->velocity.y = velocityY;
-    // entity->velocity = new Vector2d(velocityX, velocityY);
-    entity->hasVelocity = true;
-    entity->tint.r = 0xfa;
-    entity->tint.g = 0xfa;
-    entity->tint.b = 0xd2;
-    entity->tint.a = 0xff;
-    entity->hasTint = true;
-    entity->expires = 0.75;
-    entity->hasExpires = true;
+    entity->setVelocity(velocityX, velocityY);
+    entity->setTint(0xfa, 0xfa, 0xd2, 0xff);
+    entity->setExpires(0.75);
     entity->active = true;
 }
 

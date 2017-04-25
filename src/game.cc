@@ -1,21 +1,4 @@
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-// #include <SDL2/SDL_mixer.h>
-#include <SDL/SDL_ttf.h>
-#include <cstdio>
-#include <map>
-#include <string>
-#include <iostream>
-#include <ctime>
-#include <chrono>
-#include <list>
-#include <algorithm>
-#include <random>
-#include "components.h"
-#include "entity.h"
-#include "entities.h"
-#include "systems.h"
-#include "game.h"
+#include "shmupwarz.h"
 
 
 Game::Game(std::string t, int width, int height, SDL_Window* w, SDL_Renderer* r)
@@ -39,7 +22,7 @@ void Game::start() {
     running = 1;
 }
 
-void Game::draw(int fps) {//, SDL_Rect *clip) {
+void Game::draw(int fps) {
     SDL_Rect *clip = NULL;
 
     if (this->fps != fps) fpsChanged(fps);
@@ -52,7 +35,7 @@ void Game::draw(int fps) {//, SDL_Rect *clip) {
             entities[i].bounds.x = entities[i].position.x - entities[i].bounds.w / 2;
             entities[i].bounds.y = entities[i].position.y - entities[i].bounds.h / 2;
         }
-        if (entities[i].hasTint) {
+        if (entities[i].hasTint()) {
             //Color c = entities[i].tint;
             SDL_SetTextureColorMod(entities[i].sprite.texture, entities[i].tint.r, entities[i].tint.g, entities[i].tint.b);
         }
@@ -110,7 +93,7 @@ void Game::update(double delta) {
     for (int i=0; i<entities.size(); i++) systems->collisionSystem(&entities[i]);
     for (int i=0; i<entities.size(); i++) systems->entitySystem(&entities[i]);
     systems->inputSystem(player);
-    // for (int i=0; i<entities.size(); i++) systems->soundSystem(&entities[i]);
+    for (int i=0; i<entities.size(); i++) systems->soundSystem(&entities[i]);
     for (int i=0; i<entities.size(); i++) systems->physicsSystem(&entities[i]);
     for (int i=0; i<entities.size(); i++) systems->expireSystem(&entities[i]);
     for (int i=0; i<entities.size(); i++) systems->tweenSystem(&entities[i]);
@@ -119,7 +102,6 @@ void Game::update(double delta) {
 }
 
 void Game::init() {
-	//const auto path = getResourcePath("images");
     const std::string path = "";
     entities.reserve(141);
     createBackground(renderer, &entities, path);

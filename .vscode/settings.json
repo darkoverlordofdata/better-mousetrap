@@ -1,5 +1,6 @@
 {
     "files.associations": {
+        "*.lzz": "cpp",
         "system_error": "cpp",
         "array": "cpp",
         "*.tcc": "cpp",
@@ -26,6 +27,7 @@
         "utility": "cpp",
         "chrono": "cpp",
         "cmath": "cpp",
-        "limits": "cpp"
+        "limits": "cpp",
+        "string": "cpp"
     }
 }

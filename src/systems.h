@@ -1,13 +1,6 @@
 #ifndef SYSTEMS_H
 #define SYSTEMS_H
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-// #include <SDL2/SDL_mixer.h>
-#include <SDL/SDL_ttf.h>
-
-class Game;
-
 class Systems {
 public:
     Systems(Game* game);
@@ -34,9 +27,6 @@ private:
     double enemyT1;
     double enemyT2;
     double enemyT3;
-    // Mix_Chunk* pew;
-    // Mix_Chunk* asplode;
-    // Mix_Chunk* smallasplode;
 };
 
 #endif

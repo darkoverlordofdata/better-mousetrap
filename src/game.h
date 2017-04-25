@@ -1,10 +1,6 @@
 #ifndef GAME_H
 #define GAME_H
 
-#include <list>
-#include <vector>
-#include <map>
-
 enum {
     DISPLAY_WIDTH  = 480,
     DISPLAY_HEIGHT = 320,

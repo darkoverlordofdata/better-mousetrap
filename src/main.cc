@@ -1,18 +1,5 @@
-#include <stdio.h>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-#include <SDL/SDL_ttf.h>
-#include <emscripten.h>
-#include <string>
-#include <stdexcept>
-#include <cstdio>
-#include <iostream>
-#include <chrono>
-
-#include "components.h"
-#include "entity.h"
-#include "game.h"
-// 0.00015244
+#include "shmupwarz.h"
+// // 0.00015244
 // 0.000096798
 
 void main_loop(Game *arg);
@@ -41,22 +28,20 @@ extern "C" void game() {
 
     std::cout << title << std::endl << std::flush;
 
-    // SDL_Init(SDL_INIT_VIDEO);
-    // TTF_Init();
     SDL_Init(SDL_INIT_EVERYTHING);
     TTF_Init();
     if (IMG_Init(IMG_INIT_PNG) != IMG_INIT_PNG) {
         logSDLError(std::cout, "Init image");
     }
-
+    Mix_Init(0);
+    if (Mix_OpenAudio(44100,MIX_DEFAULT_FORMAT,2,4096) < 0) {
+        logSDLError(std::cout, "Init mixer");
+    }
+    Mix_AllocateChannels(500);
     window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN);
     renderer = SDL_CreateRenderer(window, -1, 0);
     Game *game = new Game(title, width, height, window, renderer);
     game->start();
-    /**
-     * Schedule the main loop handler to get 
-     * called on each animation frame
-     */
     emscripten_set_main_loop_arg((em_arg_callback_func)main_loop, game, 0, 1);
 }
 
@@ -87,7 +72,6 @@ void main_loop(Game *game) {
             k2 = 0;
             t = 0.0;
         }
-    
         game->draw(fps);
 
 }

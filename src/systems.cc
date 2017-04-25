@@ -1,26 +1,7 @@
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-// #include <SDL2/SDL_mixer.h>
-#include <SDL/SDL_ttf.h>
-#include <cstdio>
-#include <map>
-#include <string>
-#include <iostream>
-#include <ctime>
-#include <chrono>
-#include <vector>
-#include <random>
-#include "components.h"
-#include "entity.h"
-#include "entities.h"
-#include "game.h"
-#include "systems.h"
+#include "shmupwarz.h"
 
 
 Systems::Systems(Game* g): game(g) {
-    // pew = Mix_LoadWAV("/home/bruce/scala/shmupwarz/assets/sounds/pew.wav");
-    // asplode = Mix_LoadWAV("/home/bruce/scala/shmupwarz/assets/sounds/asplode.wav");
-    // smallasplode = Mix_LoadWAV("/home/bruce/scala/shmupwarz/assets/sounds/smallasplode.wav");
     FireRate = 0.1;
     timeToFire = 0.0;
     enemyT1 = 1.0;
@@ -43,33 +24,21 @@ void Systems::inputSystem(Entity* entity){
     }
 }
 
-// void Systems::soundSystem(Entity* entity){
-//     if (entity->active && entity->sound) {
-//         switch(entity->sound) {
-//             case Effect::PEW: 
-//                 Mix_PlayChannelTimed(-1, pew, 0, 0);
-//                 break;
-
-//             case Effect::ASPLODE: 
-//                 Mix_PlayChannelTimed(-1, asplode, 0, 0);
-//                 break;
-
-//             case Effect::SMALLASPLODE: 
-//                 Mix_PlayChannelTimed(-1, smallasplode, 0, 0);
-//                 break;
-//         }
-//     }
-// }
+void Systems::soundSystem(Entity* entity){
+    if (entity->active && entity->hasSound()) {
+        //Mix_PlayChannelTimed(-1, entity->sound.chunk, 0, 1);
+    }
+}
 
 void Systems::physicsSystem(Entity* entity){
-    if (entity->active && entity->hasVelocity) {
+    if (entity->active && entity->hasVelocity()) {
         entity->position.x += entity->velocity.x * game->delta;
         entity->position.y += entity->velocity.y * game->delta;
     }
 }
 
 void Systems::expireSystem(Entity* entity){
-    if (entity->active && entity->hasExpires) {
+    if (entity->active && entity->hasExpires()) {
         double exp = entity->expires - game->delta;
         entity->expires = exp;
         if (entity->expires < 0) {
@@ -79,7 +48,7 @@ void Systems::expireSystem(Entity* entity){
 }
 
 void Systems::tweenSystem(Entity* entity){
-    if (entity->active && entity->hasTween) {
+    if (entity->active && entity->hasTween()) {
 
         double x = entity->scale.x + (entity->tween.speed * game->delta);
         double y = entity->scale.y + (entity->tween.speed * game->delta);
@@ -98,10 +67,6 @@ void Systems::tweenSystem(Entity* entity){
         entity->scale.x = x; 
         entity->scale.y = y; 
         entity->tween.active = active;
-        // entity->tween = new Tween(entity->tween.min, 
-        //                             entity->tween.max, 
-        //                             entity->tween.speed, 
-        //                             entity->tween.repeat, active);
     }
 }
 
@@ -207,7 +172,7 @@ void Systems::handleCollision(Entity* a, Entity* b){
     game->bangs.push_back(Point2d(b->bounds.x, b->bounds.y));
     b->active = false;
     for (int i=0; i<3; i++) game->particles.push_back(Point2d(b->bounds.x, b->bounds.y));
-    if (a->hasHealth) {
+    if (a->hasHealth()) {
         double h = a->health.current - 2;
         if (h < 0) {
             game->explosions.push_back(Point2d(a->position.x, a->position.y));
