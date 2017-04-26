@@ -14,6 +14,7 @@
 #include <stdexcept>
 #include <algorithm>
 #include <emscripten.h>
+#include <experimental/optional>
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>

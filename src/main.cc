@@ -20,11 +20,9 @@ long k2 = 0;
 high_resolution_clock::time_point mark1 = high_resolution_clock::now();
 
 extern "C" void game() {
-    SDL_Window *window;
-    SDL_Renderer *renderer;
-    const char* title = "Shmupwarz";
-    int width = 720;
-    int height = 600;
+    auto title = "Shmupwarz";
+    auto width = 720;
+    auto height = 600;
 
     std::cout << title << std::endl << std::flush;
 
@@ -38,9 +36,9 @@ extern "C" void game() {
         logSDLError(std::cout, "Init mixer");
     }
     Mix_AllocateChannels(500);
-    window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN);
-    renderer = SDL_CreateRenderer(window, -1, 0);
-    Game *game = new Game(title, width, height, window, renderer);
+    auto window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN);
+    auto renderer = SDL_CreateRenderer(window, -1, 0);
+    auto game = new Game(title, width, height, window, renderer);
     game->start();
     emscripten_set_main_loop_arg((em_arg_callback_func)main_loop, game, 0, 1);
 }

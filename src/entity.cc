@@ -1,5 +1,6 @@
 #include "shmupwarz.h"
 
+using namespace std::experimental;
 
 Entity::Entity(int id, std::string name, bool active): id(id), name(name), active(active) {
     mask = 0;
@@ -85,49 +86,46 @@ Entity* Entity::removeSound() {
 Entity* Entity::addTint(int r, int g, int b, int a) {
     if ((__TINT__ & mask) != 0) throw std::logic_error("already has TintComponent");
     mask |= __TINT__;
-    this->tint.r = r;
-    this->tint.g = g;
-    this->tint.b = b;
-    this->tint.a = a;
+    this->tint = new Color(r, g, b, a);
     return this;
     
 }
 Entity* Entity::setTint(int r, int g, int b, int a) {
     if ((__TINT__ & mask) == 0) throw std::logic_error("does not have TintComponent");
-    this->tint.r = r;
-    this->tint.g = g;
-    this->tint.b = b;
-    this->tint.a = a;
+    this->tint.value()->r = r;
+    this->tint.value()->g = g;
+    this->tint.value()->b = b;
+    this->tint.value()->a = a;
     return this;    
 }
 Entity* Entity::removeTint() {
     if ((__TINT__ & mask) == 0) throw std::logic_error("does not have TintComponent");
     mask ^= __TINT__;
+    optional<Color*> nullValue;
+    swap(this->tint, nullValue);
     return this;   
 }
 
 Entity* Entity::addTween(double min, double max, double speed, bool repeat, bool active) {
     if ((__TWEEN__ & mask) != 0) throw std::logic_error("already has TweenComponent");
-    this->tween.min = min;
-    this->tween.max = max;
-    this->tween.speed = speed;
-    this->tween.repeat = repeat;
-    this->tween.active = active;
+    this->tween = new Tween(min, max, speed, repeat, active);
     mask |= __TWEEN__;
     return this;
     
 }
 Entity* Entity::setTween(double min, double max, double speed, bool repeat, bool active) {
     if ((__TWEEN__ & mask) == 0) throw std::logic_error("does not have TweenComponent");
-    this->tween.min = min;
-    this->tween.max = max;
-    this->tween.speed = speed;
-    this->tween.repeat = repeat;
-    this->tween.active = active;
+    this->tween.value()->min = min;
+    this->tween.value()->max = max;
+    this->tween.value()->speed = speed;
+    this->tween.value()->repeat = repeat;
+    this->tween.value()->active = active;
     return this;
 }
 Entity* Entity::removeTween() {
     if ((__TWEEN__ & mask) == 0) throw std::logic_error("does not have TweenComponent");
+    optional<Tween*> nullValue;
+    swap(this->tween, nullValue);
     mask ^= __TWEEN__;
     return this;
     
@@ -135,21 +133,22 @@ Entity* Entity::removeTween() {
 
 Entity* Entity::addVelocity(double x, double y) {
     if ((__VELOCITY__ & mask) != 0) throw std::logic_error("already has VelocityComponent");
-    this->velocity.x = x;
-    this->velocity.y = y;
+    this->velocity = new Vector2d(x, y);
     mask |= __VELOCITY__;
     return this;
     
 }
 Entity* Entity::setVelocity(double x, double y) {
     if ((__VELOCITY__ & mask) == 0) throw std::logic_error("does not have VelocityComponent");
-    this->velocity.x = x;
-    this->velocity.y = y;
+    this->velocity.value()->x = x;
+    this->velocity.value()->y = y;
     return this;
     
 }
 Entity* Entity::removeVelocity() {
     if ((__VELOCITY__ & mask) == 0) throw std::logic_error("does not have VelocityComponent");
+    optional<Vector2d*> nullValue;
+    swap(this->velocity, nullValue);
     mask ^= __VELOCITY__;
     return this;
     

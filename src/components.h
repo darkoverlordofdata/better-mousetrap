@@ -1,20 +1,36 @@
 #ifndef COMPONENTS_H
 #define COMPONENTS_H
 
+
+using namespace std::experimental;
+
+
 enum ComponentFlag {
-    __EXPIRES__     = 0x0000000000000001,
-    __HEALTH__      = 0x0000000000000002,
-    __SOUND__       = 0x0000000000000004,
-    __TINT__        = 0x0000000000000008,
-    __TWEEN__       = 0x0000000000000010,
-    __VELOCITY__    = 0x0000000000000020,
-    __ACTIVE__      = 0x8000000000000000
+    __BOUNDS__      = 0x0000000000000001,
+    __EXPIRES__     = 0x0000000000000002,
+    __HEALTH__      = 0x0000000000000004,
+    __KIND__        = 0x0000000000000008,
+    __LEVEL__       = 0x0000000000000010,
+    __POSITION__    = 0x0000000000000020,
+    __SCALE__       = 0x0000000000000040,
+    __SOUND__       = 0x0000000000000080,
+    __SPRITE__      = 0x0000000000000100,
+    __TINT__        = 0x0000000000000200,
+    __TWEEN__       = 0x0000000000000400,
+    __VELOCITY__    = 0x0000000000000800,
+    __ACTIVE__      = 0x0800000000000000
 };
 
 enum Components {
-    ExpiresComponent = 1,
+    BoundsComponent = 1,
+    ExpiresComponent,
     HealthComponent,
+    KindComponent,
+    LevelComponent,
+    PositionComponent,
+    ScaleComponent,
     SoundComponent,
+    SpriteComponent,
     TintComponent,
     TweenComponent,
     VelocityComponent,
@@ -117,7 +133,7 @@ public:
     int height;
 };
 
-const long long __POW2__[] = {
+const unsigned long long __POW2__[] = {
     0x0000000000000000,
     0x0000000000000001,
     0x0000000000000002,

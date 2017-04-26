@@ -37,7 +37,7 @@ void Game::draw(int fps) {
         }
         if (entities[i].hasTint()) {
             //Color c = entities[i].tint;
-            SDL_SetTextureColorMod(entities[i].sprite.texture, entities[i].tint.r, entities[i].tint.g, entities[i].tint.b);
+            SDL_SetTextureColorMod(entities[i].sprite.texture, entities[i].tint.value()->r, entities[i].tint.value()->g, entities[i].tint.value()->b);
         }
         SDL_RenderCopy(renderer, entities[i].sprite.texture, clip, &entities[i].bounds);
     }

@@ -31,15 +31,15 @@ void Systems::soundSystem(Entity* entity){
 }
 
 void Systems::physicsSystem(Entity* entity){
-    if (entity->active && entity->hasVelocity()) {
-        entity->position.x += entity->velocity.x * game->delta;
-        entity->position.y += entity->velocity.y * game->delta;
+    if (entity->active && entity->velocity) {
+        entity->position.x += entity->velocity.value()->x * game->delta;
+        entity->position.y += entity->velocity.value()->y * game->delta;
     }
 }
 
 void Systems::expireSystem(Entity* entity){
     if (entity->active && entity->hasExpires()) {
-        double exp = entity->expires - game->delta;
+        auto exp = entity->expires - game->delta;
         entity->expires = exp;
         if (entity->expires < 0) {
             entity->active = false;
@@ -50,23 +50,23 @@ void Systems::expireSystem(Entity* entity){
 void Systems::tweenSystem(Entity* entity){
     if (entity->active && entity->hasTween()) {
 
-        double x = entity->scale.x + (entity->tween.speed * game->delta);
-        double y = entity->scale.y + (entity->tween.speed * game->delta);
-        bool active = entity->tween.active;
+        auto x = entity->scale.x + (entity->tween.value()->speed * game->delta);
+        auto y = entity->scale.y + (entity->tween.value()->speed * game->delta);
+        auto active = entity->tween.value()->active;
 
 
-        if (x > entity->tween.max) {
-            x = entity->tween.max;
-            y = entity->tween.max;
+        if (x > entity->tween.value()->max) {
+            x = entity->tween.value()->max;
+            y = entity->tween.value()->max;
             active = false;
-        } else if (x < entity->tween.min) {
-            x = entity->tween.min;
-            y = entity->tween.min;
+        } else if (x < entity->tween.value()->min) {
+            x = entity->tween.value()->min;
+            y = entity->tween.value()->min;
             active = false;
         }
         entity->scale.x = x; 
         entity->scale.y = y; 
-        entity->tween.active = active;
+        entity->tween.value()->active = active;
     }
 }
 
@@ -90,7 +90,7 @@ void Systems::removeSystem(Entity* entity){
 }
 
 double Systems::spawnEnemy(double delta, double t, int enemy) {
-    double d1 = t-delta;
+    auto d1 = t-delta;
     if (d1 < 0.0) {
         switch(enemy) {
             case 1:
@@ -173,7 +173,7 @@ void Systems::handleCollision(Entity* a, Entity* b){
     b->active = false;
     for (int i=0; i<3; i++) game->particles.push_back(Point2d(b->bounds.x, b->bounds.y));
     if (a->hasHealth()) {
-        double h = a->health.current - 2;
+        auto h = a->health.current - 2;
         if (h < 0) {
             game->explosions.push_back(Point2d(a->position.x, a->position.y));
             a->active = false;

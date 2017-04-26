@@ -21,9 +21,9 @@ public:
     double expires;
     Health health;
     Sound sound;
-    Color tint;
-    Tween tween;
-    Vector2d velocity;
+    optional<Color*> tint;
+    optional<Tween*> tween;
+    optional<Vector2d*> velocity;
 
     bool hasExpires();
     bool hasHealth();
