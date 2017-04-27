@@ -16,11 +16,11 @@ public:
     void entitySystem(Entity* entity);
     void collisionSystem(Entity* entity);
 
+private:
     double spawnEnemy(double delta, double t, int enemy);
     bool intersects(SDL_Rect* r1, SDL_Rect* r2);
     void handleCollision(Entity* a, Entity* b);
 
-private:
     Game* game;
     double FireRate;
     double timeToFire;

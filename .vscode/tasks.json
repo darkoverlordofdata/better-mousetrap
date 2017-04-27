@@ -12,7 +12,7 @@
             "isBuildCommand": true,
             "taskName": "build",
             "args": ["emcc -std=c++1z src/entities.cc src/entity.cc src/systems.cc src/game.cc src/main.cc -O2 -s WASM=1 -s USE_OGG=1 -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS='[\"png\"]' -s USE_SDL_TTF=2 -s USE_SDL_TTF=2 -s EXPORTED_FUNCTIONS='[\"_game\"]' --preload-file assets -o web/shmupwarz.js"]
-            // "args": ["emcc src/entities.cc src/entity.cc src/systems.cc src/game.cc src/main.cc -O2 -s WASM=1 -s DISABLE_EXCEPTION_CATCHING=0  -s USE_OGG=1 -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS='[\"png\"]' -s USE_SDL_TTF=2 -s USE_SDL_TTF=2 -s EXPORTED_FUNCTIONS='[\"_game\"]' --preload-file assets -o web/shmupwarz.js"]
+            // "args": ["emcc -std=c++1z src/entities.cc src/entity.cc src/systems.cc src/game.cc src/main.cc -O2 -s WASM=1 -s DISABLE_EXCEPTION_CATCHING=0 -s USE_OGG=1 -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS='[\"png\"]' -s USE_SDL_TTF=2 -s USE_SDL_TTF=2 -s EXPORTED_FUNCTIONS='[\"_game\"]' --preload-file assets -o web/shmupwarz.js"]
         }
     ]
 }

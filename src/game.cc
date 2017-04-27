@@ -28,16 +28,15 @@ void Game::draw(int fps) {
     if (this->fps != fps) fpsChanged(fps);
     SDL_RenderClear(renderer);
     for (int i=0; i<entities.size(); i++) {
-        if (entities[i].active == false) continue;
-        if (entities[i].category != BACKGROUND) {
+        if (entities[i].isActive() == false) continue;
+        if (entities[i].kind != BACKGROUND) {
             entities[i].bounds.w = entities[i].sprite.width * entities[i].scale.x;
             entities[i].bounds.h = entities[i].sprite.height * entities[i].scale.y;
             entities[i].bounds.x = entities[i].position.x - entities[i].bounds.w / 2;
             entities[i].bounds.y = entities[i].position.y - entities[i].bounds.h / 2;
         }
         if (entities[i].hasTint()) {
-            //Color c = entities[i].tint;
-            SDL_SetTextureColorMod(entities[i].sprite.texture, entities[i].tint.value()->r, entities[i].tint.value()->g, entities[i].tint.value()->b);
+            SDL_SetTextureColorMod(entities[i].sprite.texture, entities[i].tint.r, entities[i].tint.g, entities[i].tint.b);
         }
         SDL_RenderCopy(renderer, entities[i].sprite.texture, clip, &entities[i].bounds);
     }
@@ -104,14 +103,14 @@ void Game::update(double delta) {
 void Game::init() {
     const std::string path = "";
     entities.reserve(141);
-    createBackground(renderer, &entities, path);
-    for (int i=0; i<12; i++)    createBullet(renderer, &entities, path);
-    for (int i=0; i<15; i++)    createEnemy1(renderer, &entities, path);
-    for (int i=0; i<5; i++)     createEnemy2(renderer, &entities, path);
-    for (int i=0; i<4; i++)     createEnemy3(renderer, &entities, path);
-    for (int i=0; i<10; i++)    createExplosion(renderer, &entities, path);
-    for (int i=0; i<12; i++)    createBang(renderer, &entities, path);
-    for (int i=0; i<100; i++)   createParticle(renderer, &entities, path);
-    player = createPlayer(renderer, &entities, path);
+    createBackground(renderer, &entities);
+    for (int i=0; i<12; i++)    createBullet(renderer, &entities);
+    for (int i=0; i<15; i++)    createEnemy1(renderer, &entities);
+    for (int i=0; i<5; i++)     createEnemy2(renderer, &entities);
+    for (int i=0; i<4; i++)     createEnemy3(renderer, &entities);
+    for (int i=0; i<10; i++)    createExplosion(renderer, &entities);
+    for (int i=0; i<12; i++)    createBang(renderer, &entities);
+    for (int i=0; i<100; i++)   createParticle(renderer, &entities);
+    player = createPlayer(renderer, &entities);
 }
 

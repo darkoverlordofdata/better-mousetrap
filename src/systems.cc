@@ -17,70 +17,70 @@ void Systems::inputSystem(Entity* entity){
     if (game->getKey(122) || game->mouseDown) {
         timeToFire -= game->delta;
         if (timeToFire < 0.0) {
-            game->bullets.push_back(Point2d(entity->position.x - 27, entity->position.y + 2));
-            game->bullets.push_back(Point2d(entity->position.x + 27, entity->position.y + 2));
+            game->bullets.emplace_back(entity->position.x - 27, entity->position.y + 2);
+            game->bullets.emplace_back(entity->position.x + 27, entity->position.y + 2);
             timeToFire = FireRate;
         }
     }
 }
 
 void Systems::soundSystem(Entity* entity){
-    if (entity->active && entity->hasSound()) {
+    if (entity->isActive() && entity->hasSound()) {
         //Mix_PlayChannelTimed(-1, entity->sound.chunk, 0, 1);
     }
 }
 
 void Systems::physicsSystem(Entity* entity){
-    if (entity->active && entity->velocity) {
-        entity->position.x += entity->velocity.value()->x * game->delta;
-        entity->position.y += entity->velocity.value()->y * game->delta;
+    if (entity->isActive() && entity->hasVelocity()) {
+        entity->position.x += entity->velocity.x * game->delta;
+        entity->position.y += entity->velocity.y * game->delta;
     }
 }
 
 void Systems::expireSystem(Entity* entity){
-    if (entity->active && entity->hasExpires()) {
+    if (entity->isActive() && entity->hasExpires()) {
         auto exp = entity->expires - game->delta;
         entity->expires = exp;
         if (entity->expires < 0) {
-            entity->active = false;
+            entity->setActive(false);
         }
     }
 }
 
 void Systems::tweenSystem(Entity* entity){
-    if (entity->active && entity->hasTween()) {
+    if (entity->isActive() && entity->hasTween()) {
 
-        auto x = entity->scale.x + (entity->tween.value()->speed * game->delta);
-        auto y = entity->scale.y + (entity->tween.value()->speed * game->delta);
-        auto active = entity->tween.value()->active;
+        auto x = entity->scale.x + (entity->tween.speed * game->delta);
+        auto y = entity->scale.y + (entity->tween.speed * game->delta);
+        auto active = entity->tween.active;
 
 
-        if (x > entity->tween.value()->max) {
-            x = entity->tween.value()->max;
-            y = entity->tween.value()->max;
+        if (x > entity->tween.max) {
+            x = entity->tween.max;
+            y = entity->tween.max;
             active = false;
-        } else if (x < entity->tween.value()->min) {
-            x = entity->tween.value()->min;
-            y = entity->tween.value()->min;
+        } else if (x < entity->tween.min) {
+            x = entity->tween.min;
+            y = entity->tween.min;
             active = false;
         }
         entity->scale.x = x; 
         entity->scale.y = y; 
-        entity->tween.value()->active = active;
+        entity->tween.active = active;
     }
 }
 
 void Systems::removeSystem(Entity* entity){
-    if (entity->active) {
-        switch(entity->category) {
+    if (entity->isActive()) {
+        switch(entity->kind) {
             case ENEMY:
                 if (entity->position.y > game->height) {
-                    entity->active = false;
+                    entity->setActive(false);
                 }
                 break;
             case BULLET:
                 if (entity->position.y < 0) {
-                    entity->active = false;
+                    entity->setActive(false);
                 }
                 break;
             default:
@@ -94,13 +94,13 @@ double Systems::spawnEnemy(double delta, double t, int enemy) {
     if (d1 < 0.0) {
         switch(enemy) {
             case 1:
-                game->enemies1.push_back(Point2d((std::rand() % (game->width-70))+35, 35));
+                game->enemies1.emplace_back((std::rand() % (game->width-70))+35, 35);
                 return 1.0;
             case 2:
-                game->enemies2.push_back(Point2d((std::rand() % (game->width-170))+85, 85));
+                game->enemies2.emplace_back((std::rand() % (game->width-170))+85, 85);
                 return 4.0;
             case 3:
-                game->enemies3.push_back(Point2d((std::rand() % (game->width-320))+160, 160));
+                game->enemies3.emplace_back((std::rand() % (game->width-320))+160, 160);
                 return 6.0;
             default:
                 return 0;
@@ -116,8 +116,8 @@ void Systems::spawnSystem(Entity* entity){
 }
 
 void Systems::entitySystem(Entity* entity){
-    if (!entity->active) {
-        switch(entity->actor) {
+    if (!entity->isActive()) {
+        switch(entity->level) {
 
             case ACTOR_BULLET: 
                 if (game->bullets.empty()) break;
@@ -169,34 +169,27 @@ void Systems::entitySystem(Entity* entity){
 }
 
 void Systems::handleCollision(Entity* a, Entity* b){
-    game->bangs.push_back(Point2d(b->bounds.x, b->bounds.y));
-    b->active = false;
-    for (int i=0; i<3; i++) game->particles.push_back(Point2d(b->bounds.x, b->bounds.y));
+    game->bangs.emplace_back(b->bounds.x, b->bounds.y);
+    b->setActive(false);
+    for (int i=0; i<3; i++) game->particles.emplace_back(b->bounds.x, b->bounds.y);
     if (a->hasHealth()) {
         auto h = a->health.current - 2;
         if (h < 0) {
-            game->explosions.push_back(Point2d(a->position.x, a->position.y));
-            a->active = false;
+            game->explosions.emplace_back(a->position.x, a->position.y);
+            a->setActive(false);
         } else {
             a->health.current = h;
         }   
     }
 }
 
-// bool Systems::intersects(SDL_Rect* r1, SDL_Rect* r2) {
-//     return ((r1->x < r2->x + r2->w) && 
-//             (r1->x + r1->w > r2->x) && 
-//             (r1->y < r2->y + r2->h) && 
-//             (r1->y + r1->h > r2->y));
-// }
-
 void Systems::collisionSystem(Entity* entity){
-    if (entity->active && entity->category == ENEMY) {
+    if (entity->isActive() && entity->kind == ENEMY) {
         for (int i=0; i<game->entities.size(); i++) {
             Entity* bullet = &game->entities[i];
-            if (bullet->active && bullet->category == BULLET) {
+            if (bullet->isActive() && bullet->kind == BULLET) {
                 if (SDL_HasIntersection(&entity->bounds, &bullet->bounds)) {
-                    if (entity->active && bullet->active) handleCollision(entity, bullet);
+                    if (entity->isActive() && bullet->isActive()) handleCollision(entity, bullet);
                     return;
                 }
             }

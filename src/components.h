@@ -1,10 +1,6 @@
 #ifndef COMPONENTS_H
 #define COMPONENTS_H
 
-
-using namespace std::experimental;
-
-
 enum ComponentFlag {
     __BOUNDS__      = 0x0000000000000001,
     __EXPIRES__     = 0x0000000000000002,
