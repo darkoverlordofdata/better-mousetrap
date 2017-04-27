@@ -18,7 +18,7 @@
         "-lgobject-2.0",
         "-lglib-2.0",
         "-obin/testcpp",
-        "cpp/resources.cc",
+        "src.vala/resources.cc",
         "cpp/entities.cc",
         "cpp/systems.cc",
         "cpp/game.cc",

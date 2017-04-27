@@ -5,14 +5,6 @@ using sdx instead of directly using SDL.
 when loading sprite via TextureAtlas, alpha dpesn't seem to work correctly.
 dig into SDL_CreateRGBSurface
 
-### data model
-
-the data model ends up a lot like a database, with values stored in records.
-
-use entitas.json to describe this database and interface to it as raw memory, as though there were actual defined structs. Then the language of choice only needs to be able to call c. maybe can then be used in javascript or scala.
-
-Vala structs are filled with pitfals. Documentation is wrong. Private doesn't work. super-struct fails. Only a simple struct with all public fields works. I think the best way to deal with that 
-is to bury it far down where I don't have to touch it...
 
 ### Performance
 
@@ -32,10 +24,11 @@ avg usec per frame after 10,000 frames:
     gjs             0.005094
 
 ##### data-locality
-    emcc            0.000150 
+    emcc            0.000200 (~20x typescript)
     cpp             0.000040
     vala            0.000042
-    vala+sdx        0.000098   
+    vala+sdx        0.000098  
+    vala+sdx        0.001222 (10x Slower after ElementaryOS updates) 
 
     4566/98 = 45x  
 

@@ -105,7 +105,7 @@ public:
     bool active;
     Actor actor;
     Category category;
-    Point2d pos;
+    Point2d position;
     SDL_Rect bounds;
     Vector2d scale;
     Sprite sprite;
