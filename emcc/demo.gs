@@ -1,9 +1,17 @@
-
 uses SDL
 uses Emscripten
 
 surface: unowned Surface
 bgd: Surface
+mark1: double
+mark2: double
+delta: double
+
+struct Context
+	mark1: double
+	mark2: double
+	delta: double
+
 
 init
 
@@ -25,10 +33,21 @@ init
 	
 	WindowManager.set_caption("ShmupWarz", "ShmupWarz")
 
-	emscripten_set_main_loop_arg(main_loop, null, 0, 1)
+	ctx:Context = {emscripten_get_now()/1000, 0, 0}
+
+	mark1 = emscripten_get_now()/1000
+	emscripten_set_main_loop_arg(main_loop, &ctx, 0, 1)
 
 
-def main_loop(game:void*)
+def main_loop(arg:void*)
+
+	var ctx = (Context*)arg
+
+	ctx->mark2 = emscripten_get_now()/1000
+	ctx->delta = ctx->mark2 - ctx->mark1
+	ctx->mark1 = ctx->mark2
+
+	print "%f", ctx->delta
 
 	event: SDL.Event
 	while Event.poll(out event) > 0
@@ -41,3 +60,6 @@ def main_loop(game:void*)
 		surface.fill(null, surface.format.map_rgb(255, 0, 0))
 		bgd.blit(null, surface, null)
 		surface.flip()
+
+
+

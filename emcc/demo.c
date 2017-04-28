@@ -5,21 +5,65 @@
 #include <glib.h>
 #include <glib-object.h>
 #include <SDL.h>
-#include <stdlib.h>
+#include <float.h>
+#include <math.h>
 #include <string.h>
+#include <stdlib.h>
 #include <emscripten.h>
 
+
+#define TYPE_CONTEXT (context_get_type ())
+typedef struct _Context Context;
 #define _SDL_FreeSurface0(var) ((var == NULL) ? NULL : (var = (SDL_FreeSurface (var), NULL)))
+
+struct _Context {
+	gdouble mark1;
+	gdouble mark2;
+	gdouble delta;
+};
 
 
 extern SDL_Surface* surface;
 SDL_Surface* surface = NULL;
 extern SDL_Surface* bgd;
 SDL_Surface* bgd = NULL;
+extern gdouble mark1;
+gdouble mark1 = 0.0;
+extern gdouble mark2;
+gdouble mark2 = 0.0;
+extern gdouble delta;
+gdouble delta = 0.0;
 
+GType context_get_type (void) G_GNUC_CONST;
+Context* context_dup (const Context* self);
+void context_free (Context* self);
 void _vala_main (gchar** args, int args_length1);
-void main_loop (void* game);
+void main_loop (void* arg);
 static void _main_loop_em_arg_callback_func (void* arg);
+
+
+Context* context_dup (const Context* self) {
+	Context* dup;
+	dup = g_new0 (Context, 1);
+	memcpy (dup, self, sizeof (Context));
+	return dup;
+}
+
+
+void context_free (Context* self) {
+	g_free (self);
+}
+
+
+GType context_get_type (void) {
+	static volatile gsize context_type_id__volatile = 0;
+	if (g_once_init_enter (&context_type_id__volatile)) {
+		GType context_type_id;
+		context_type_id = g_boxed_type_register_static ("Context", (GBoxedCopyFunc) context_dup, (GBoxedFreeFunc) context_free);
+		g_once_init_leave (&context_type_id__volatile, context_type_id);
+	}
+	return context_type_id__volatile;
+}
 
 
 static void _main_loop_em_arg_callback_func (void* arg) {
@@ -33,6 +77,10 @@ void _vala_main (gchar** args, int args_length1) {
 	SDL_Surface* _tmp3_ = NULL;
 	SDL_Surface* _tmp5_ = NULL;
 	SDL_Surface* _tmp6_ = NULL;
+	Context ctx = {0};
+	gdouble _tmp8_ = 0.0;
+	Context _tmp9_ = {0};
+	gdouble _tmp10_ = 0.0;
 	_tmp0_ = SDL_Init ((guint32) SDL_INIT_VIDEO);
 	if (_tmp0_ < 0) {
 		const gchar* _tmp1_ = NULL;
@@ -60,7 +108,14 @@ void _vala_main (gchar** args, int args_length1) {
 		return;
 	}
 	SDL_WM_SetCaption ("ShmupWarz", "ShmupWarz");
-	emscripten_set_main_loop_arg (_main_loop_em_arg_callback_func, NULL, 0, 1);
+	_tmp8_ = emscripten_get_now ();
+	_tmp9_.mark1 = _tmp8_ / 1000;
+	_tmp9_.mark2 = (gdouble) 0;
+	_tmp9_.delta = (gdouble) 0;
+	ctx = _tmp9_;
+	_tmp10_ = emscripten_get_now ();
+	mark1 = _tmp10_ / 1000;
+	emscripten_set_main_loop_arg (_main_loop_em_arg_callback_func, &ctx, 0, 1);
 }
 
 
@@ -73,28 +128,54 @@ int main (int argc, char ** argv) {
 }
 
 
-void main_loop (void* game) {
+void main_loop (void* arg) {
+	Context* ctx = NULL;
+	void* _tmp0_ = NULL;
+	gdouble _tmp1_ = 0.0;
+	Context* _tmp2_ = NULL;
+	gdouble _tmp3_ = 0.0;
+	Context* _tmp4_ = NULL;
+	gdouble _tmp5_ = 0.0;
+	Context* _tmp6_ = NULL;
+	gdouble _tmp7_ = 0.0;
+	Context* _tmp8_ = NULL;
+	gdouble _tmp9_ = 0.0;
 	SDL_Event event = {0};
+	_tmp0_ = arg;
+	ctx = (Context*) _tmp0_;
+	_tmp1_ = emscripten_get_now ();
+	(*ctx).mark2 = _tmp1_ / 1000;
+	_tmp2_ = ctx;
+	_tmp3_ = (*_tmp2_).mark2;
+	_tmp4_ = ctx;
+	_tmp5_ = (*_tmp4_).mark1;
+	(*ctx).delta = _tmp3_ - _tmp5_;
+	_tmp6_ = ctx;
+	_tmp7_ = (*_tmp6_).mark2;
+	(*ctx).mark1 = _tmp7_;
+	_tmp8_ = ctx;
+	_tmp9_ = (*_tmp8_).delta;
+	g_print ("%f\n", _tmp9_);
 	while (TRUE) {
-		SDL_Event _tmp0_ = {0};
-		gint _tmp1_ = 0;
-		SDL_Event _tmp2_ = {0};
-		guchar _tmp3_ = '\0';
-		SDL_Surface* _tmp4_ = NULL;
-		SDL_Surface* _tmp5_ = NULL;
-		SDL_PixelFormat* _tmp6_ = NULL;
-		guint32 _tmp7_ = 0U;
-		SDL_Surface* _tmp8_ = NULL;
-		SDL_Surface* _tmp9_ = NULL;
-		SDL_Surface* _tmp10_ = NULL;
-		_tmp1_ = SDL_PollEvent (&_tmp0_);
-		event = _tmp0_;
-		if (!(_tmp1_ > 0)) {
+		SDL_Event _tmp10_ = {0};
+		gint _tmp11_ = 0;
+		SDL_Event _tmp12_ = {0};
+		guchar _tmp13_ = '\0';
+		SDL_Surface* _tmp14_ = NULL;
+		SDL_Surface* _tmp15_ = NULL;
+		SDL_PixelFormat* _tmp16_ = NULL;
+		guint32 _tmp17_ = 0U;
+		SDL_Surface* _tmp18_ = NULL;
+		SDL_Surface* _tmp19_ = NULL;
+		SDL_Surface* _tmp20_ = NULL;
+		_tmp11_ = SDL_PollEvent (&_tmp10_);
+		event = _tmp10_;
+		if (!(_tmp11_ > 0)) {
 			break;
 		}
-		_tmp2_ = event;
-		_tmp3_ = _tmp2_.type;
-		switch (_tmp3_) {
+		_tmp12_ = event;
+		_tmp13_ = _tmp12_.type;
+		switch (_tmp13_) {
 			case SDL_QUIT:
 			{
 				{
@@ -104,16 +185,16 @@ void main_loop (void* game) {
 			default:
 			break;
 		}
-		_tmp4_ = surface;
-		_tmp5_ = surface;
-		_tmp6_ = _tmp5_->format;
-		_tmp7_ = SDL_MapRGB (_tmp6_, (guchar) 255, (guchar) 0, (guchar) 0);
-		SDL_FillRect (_tmp4_, NULL, _tmp7_);
-		_tmp8_ = bgd;
-		_tmp9_ = surface;
-		SDL_UpperBlit (_tmp8_, NULL, _tmp9_, NULL);
-		_tmp10_ = surface;
-		SDL_Flip (_tmp10_);
+		_tmp14_ = surface;
+		_tmp15_ = surface;
+		_tmp16_ = _tmp15_->format;
+		_tmp17_ = SDL_MapRGB (_tmp16_, (guchar) 255, (guchar) 0, (guchar) 0);
+		SDL_FillRect (_tmp14_, NULL, _tmp17_);
+		_tmp18_ = bgd;
+		_tmp19_ = surface;
+		SDL_UpperBlit (_tmp18_, NULL, _tmp19_, NULL);
+		_tmp20_ = surface;
+		SDL_Flip (_tmp20_);
 	}
 }
 
