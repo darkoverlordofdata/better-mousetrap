@@ -2,7 +2,20 @@
 [CCode (cheader_filename = "emscripten.h")]
 namespace Emscripten {
 
-	public delegate void em_arg_callback_func(void* ctx);
+	[CCode (cname="em_callback_func", has_target=false)]
+	public delegate void em_callback_func();
+
+	[CCode (cname="em_arg_callback_func", has_target=false)]
+	public delegate void em_arg_callback_func(void* arg);
+
+	[CCode (cname="em_str_callback_func", has_target=false)]
+	public delegate void em_str_callback_func(string str);
+
+	[CCode (cname="emscripten_run_script_string")]
+	public string emscripten_run_script_string(string script);
+
+	[CCode (cname="emscripten_set_main_loop_arg")]
+	public void emscripten_set_main_loop_arg(em_arg_callback_func fnc, void* arg, int fps, int simulate_infinite_loop);
 
 	[CCode (cname="EM_ASM(//")]
 	public void BLOCK_START();
@@ -22,6 +35,4 @@ namespace Emscripten {
 	[CCode (cname="eval")]
 	public void eval(string str);
 
-	[CCode (cname="emscripten_set_main_loop_arg")]
-	public void emscripten_set_main_loop_arg(em_arg_callback_func fnc, Object ctx, int fps, int simulate_infinite_loop);
 }
