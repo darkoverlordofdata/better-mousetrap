@@ -15,6 +15,7 @@ build_dir
 *.exe
 *.o
 *.so
+*.js.mem
 
 # Packages #
 ############
