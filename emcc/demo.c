@@ -4,83 +4,305 @@
 
 #include <glib.h>
 #include <glib-object.h>
+#include <stdlib.h>
+#include <string.h>
 #include <SDL.h>
 #include <float.h>
 #include <math.h>
-#include <string.h>
-#include <stdlib.h>
 #include <emscripten.h>
 
+typedef struct _HashMap HashMap;
+typedef struct _Game Game;
 
-#define TYPE_CONTEXT (context_get_type ())
-typedef struct _Context Context;
-#define _SDL_FreeSurface0(var) ((var == NULL) ? NULL : (var = (SDL_FreeSurface (var), NULL)))
+#define ENTITAS_TYPE_ENTITY (entitas_entity_get_type ())
 
-struct _Context {
+#define ENTITAS_TYPE_BACKGROUND (entitas_background_get_type ())
+typedef struct _entitasBackground entitasBackground;
+
+#define ENTITAS_TYPE_BOUNDS (entitas_bounds_get_type ())
+typedef struct _entitasBounds entitasBounds;
+
+#define ENTITAS_TYPE_BULLET (entitas_bullet_get_type ())
+typedef struct _entitasBullet entitasBullet;
+
+#define ENTITAS_TYPE_ENEMY1 (entitas_enemy1_get_type ())
+typedef struct _entitasEnemy1 entitasEnemy1;
+
+#define ENTITAS_TYPE_ENEMY2 (entitas_enemy2_get_type ())
+typedef struct _entitasEnemy2 entitasEnemy2;
+
+#define ENTITAS_TYPE_ENEMY3 (entitas_enemy3_get_type ())
+typedef struct _entitasEnemy3 entitasEnemy3;
+
+#define ENTITAS_TYPE_EXPIRES (entitas_expires_get_type ())
+typedef struct _entitasExpires entitasExpires;
+
+#define ENTITAS_TYPE_HEALTH (entitas_health_get_type ())
+typedef struct _entitasHealth entitasHealth;
+
+#define ENTITAS_TYPE_HUD (entitas_hud_get_type ())
+typedef struct _entitasHud entitasHud;
+
+#define ENTITAS_TYPE_INDEX (entitas_index_get_type ())
+typedef struct _entitasIndex entitasIndex;
+
+#define ENTITAS_TYPE_LAYER (entitas_layer_get_type ())
+typedef struct _entitasLayer entitasLayer;
+
+#define ENTITAS_TYPE_POSITION (entitas_position_get_type ())
+typedef struct _entitasPosition entitasPosition;
+
+#define ENTITAS_TYPE_SCALE (entitas_scale_get_type ())
+typedef struct _entitasScale entitasScale;
+
+#define ENTITAS_TYPE_SPRITE (entitas_sprite_get_type ())
+typedef struct _entitasSprite entitasSprite;
+
+#define ENTITAS_TYPE_TEXT (entitas_text_get_type ())
+typedef struct _entitasText entitasText;
+
+#define ENTITAS_TYPE_TINT (entitas_tint_get_type ())
+typedef struct _entitasTint entitasTint;
+
+#define ENTITAS_TYPE_TWEEN (entitas_tween_get_type ())
+typedef struct _entitasTween entitasTween;
+
+#define ENTITAS_TYPE_VELOCITY (entitas_velocity_get_type ())
+typedef struct _entitasVelocity entitasVelocity;
+typedef struct _entitasEntity entitasEntity;
+typedef struct _Factory Factory;
+#define _game_free0(var) ((var == NULL) ? NULL : (var = (game_free (var), NULL)))
+#define _hash_map_free0(var) ((var == NULL) ? NULL : (var = (hash_map_free (var), NULL)))
+
+struct _entitasBackground {
+	gboolean active;
+};
+
+struct _entitasBounds {
+	gint x;
+	gint y;
+	gint w;
+	gint h;
+};
+
+struct _entitasBullet {
+	gboolean active;
+};
+
+struct _entitasEnemy1 {
+	gboolean active;
+};
+
+struct _entitasEnemy2 {
+	gboolean active;
+};
+
+struct _entitasEnemy3 {
+	gboolean active;
+};
+
+struct _entitasExpires {
+	gdouble value;
+};
+
+struct _entitasHealth {
+	gdouble current;
+	gdouble maximum;
+};
+
+struct _entitasHud {
+	gboolean active;
+};
+
+struct _entitasIndex {
+	gint value;
+};
+
+struct _entitasLayer {
+	gint value;
+};
+
+struct _entitasPosition {
+	gdouble x;
+	gdouble y;
+};
+
+struct _entitasScale {
+	gdouble x;
+	gdouble y;
+};
+
+struct _entitasSprite {
+	SDL_Surface* surface;
+};
+
+struct _entitasText {
+	gchar* text;
+	SDL_Surface* surface;
+};
+
+struct _entitasTint {
+	gint r;
+	gint g;
+	gint b;
+	gint a;
+};
+
+struct _entitasTween {
+	gdouble min;
+	gdouble max;
+	gdouble speed;
+	gboolean repeat;
+	gboolean active;
+};
+
+struct _entitasVelocity {
+	gdouble x;
+	gdouble y;
+};
+
+struct _entitasEntity {
+	gint id;
+	gchar* name;
+	gint pool;
+	guint64 mask;
+	entitasBackground* background;
+	entitasBounds* bounds;
+	entitasBullet* bullet;
+	entitasEnemy1* enemy1;
+	entitasEnemy2* enemy2;
+	entitasEnemy3* enemy3;
+	entitasExpires* expires;
+	entitasHealth* health;
+	entitasHud* hud;
+	entitasIndex* index;
+	entitasLayer* layer;
+	entitasPosition* position;
+	entitasScale* scale;
+	entitasSprite* sprite;
+	entitasText* text;
+	entitasTint* tint;
+	entitasTween* tween;
+	entitasVelocity* velocity;
+};
+
+struct _Game {
 	gdouble mark1;
 	gdouble mark2;
 	gdouble delta;
+	gdouble mouseX;
+	gdouble mouseY;
+	gboolean mouseDown;
+	gboolean running;
+	guint8 keys[256];
+	SDL_Event evt;
+	SDL_Surface* surface;
+	entitasEntity* player;
+	Factory* factory;
+	GList* sprites;
 };
 
 
-extern SDL_Surface* surface;
-SDL_Surface* surface = NULL;
-extern SDL_Surface* bgd;
-SDL_Surface* bgd = NULL;
-extern gdouble mark1;
-gdouble mark1 = 0.0;
-extern gdouble mark2;
-gdouble mark2 = 0.0;
-extern gdouble delta;
-gdouble delta = 0.0;
 
-GType context_get_type (void) G_GNUC_CONST;
-Context* context_dup (const Context* self);
-void context_free (Context* self);
 void _vala_main (gchar** args, int args_length1);
-void main_loop (void* arg);
-static void _main_loop_em_arg_callback_func (void* arg);
+void hash_map_free (HashMap* self);
+HashMap* hash_map_new (void);
+void hash_map_add (HashMap* self, gconstpointer key, gconstpointer value);
+gboolean hash_map_hasKey (HashMap* self, gconstpointer key);
+void game_free (Game* self);
+Game* game_new (void);
+GType entitas_entity_get_type (void) G_GNUC_CONST;
+GType entitas_background_get_type (void) G_GNUC_CONST;
+entitasBackground* entitas_background_dup (const entitasBackground* self);
+void entitas_background_free (entitasBackground* self);
+GType entitas_bounds_get_type (void) G_GNUC_CONST;
+entitasBounds* entitas_bounds_dup (const entitasBounds* self);
+void entitas_bounds_free (entitasBounds* self);
+GType entitas_bullet_get_type (void) G_GNUC_CONST;
+entitasBullet* entitas_bullet_dup (const entitasBullet* self);
+void entitas_bullet_free (entitasBullet* self);
+GType entitas_enemy1_get_type (void) G_GNUC_CONST;
+entitasEnemy1* entitas_enemy1_dup (const entitasEnemy1* self);
+void entitas_enemy1_free (entitasEnemy1* self);
+GType entitas_enemy2_get_type (void) G_GNUC_CONST;
+entitasEnemy2* entitas_enemy2_dup (const entitasEnemy2* self);
+void entitas_enemy2_free (entitasEnemy2* self);
+GType entitas_enemy3_get_type (void) G_GNUC_CONST;
+entitasEnemy3* entitas_enemy3_dup (const entitasEnemy3* self);
+void entitas_enemy3_free (entitasEnemy3* self);
+GType entitas_expires_get_type (void) G_GNUC_CONST;
+entitasExpires* entitas_expires_dup (const entitasExpires* self);
+void entitas_expires_free (entitasExpires* self);
+GType entitas_health_get_type (void) G_GNUC_CONST;
+entitasHealth* entitas_health_dup (const entitasHealth* self);
+void entitas_health_free (entitasHealth* self);
+GType entitas_hud_get_type (void) G_GNUC_CONST;
+entitasHud* entitas_hud_dup (const entitasHud* self);
+void entitas_hud_free (entitasHud* self);
+GType entitas_index_get_type (void) G_GNUC_CONST;
+entitasIndex* entitas_index_dup (const entitasIndex* self);
+void entitas_index_free (entitasIndex* self);
+GType entitas_layer_get_type (void) G_GNUC_CONST;
+entitasLayer* entitas_layer_dup (const entitasLayer* self);
+void entitas_layer_free (entitasLayer* self);
+GType entitas_position_get_type (void) G_GNUC_CONST;
+entitasPosition* entitas_position_dup (const entitasPosition* self);
+void entitas_position_free (entitasPosition* self);
+GType entitas_scale_get_type (void) G_GNUC_CONST;
+entitasScale* entitas_scale_dup (const entitasScale* self);
+void entitas_scale_free (entitasScale* self);
+GType entitas_sprite_get_type (void) G_GNUC_CONST;
+entitasSprite* entitas_sprite_dup (const entitasSprite* self);
+void entitas_sprite_free (entitasSprite* self);
+GType entitas_text_get_type (void) G_GNUC_CONST;
+entitasText* entitas_text_dup (const entitasText* self);
+void entitas_text_free (entitasText* self);
+void entitas_text_copy (const entitasText* self, entitasText* dest);
+void entitas_text_destroy (entitasText* self);
+GType entitas_tint_get_type (void) G_GNUC_CONST;
+entitasTint* entitas_tint_dup (const entitasTint* self);
+void entitas_tint_free (entitasTint* self);
+GType entitas_tween_get_type (void) G_GNUC_CONST;
+entitasTween* entitas_tween_dup (const entitasTween* self);
+void entitas_tween_free (entitasTween* self);
+GType entitas_velocity_get_type (void) G_GNUC_CONST;
+entitasVelocity* entitas_velocity_dup (const entitasVelocity* self);
+void entitas_velocity_free (entitasVelocity* self);
+entitasEntity* entitas_entity_dup (const entitasEntity* self);
+void entitas_entity_free (entitasEntity* self);
+void entitas_entity_copy (const entitasEntity* self, entitasEntity* dest);
+void entitas_entity_destroy (entitasEntity* self);
+void factory_free (Factory* self);
+void game_initialize (Game* self);
+void game_start (Game* self);
+void mainloop (void* arg);
+static void _mainloop_em_arg_callback_func (void* arg);
+void game_update (Game* self);
 
 
-Context* context_dup (const Context* self) {
-	Context* dup;
-	dup = g_new0 (Context, 1);
-	memcpy (dup, self, sizeof (Context));
-	return dup;
-}
-
-
-void context_free (Context* self) {
-	g_free (self);
-}
-
-
-GType context_get_type (void) {
-	static volatile gsize context_type_id__volatile = 0;
-	if (g_once_init_enter (&context_type_id__volatile)) {
-		GType context_type_id;
-		context_type_id = g_boxed_type_register_static ("Context", (GBoxedCopyFunc) context_dup, (GBoxedFreeFunc) context_free);
-		g_once_init_leave (&context_type_id__volatile, context_type_id);
-	}
-	return context_type_id__volatile;
-}
-
-
-static void _main_loop_em_arg_callback_func (void* arg) {
-	main_loop (arg);
+static void _mainloop_em_arg_callback_func (void* arg) {
+	mainloop (arg);
 }
 
 
 void _vala_main (gchar** args, int args_length1) {
 	gint _tmp0_ = 0;
-	SDL_Surface* _tmp2_ = NULL;
-	SDL_Surface* _tmp3_ = NULL;
-	SDL_Surface* _tmp5_ = NULL;
-	SDL_Surface* _tmp6_ = NULL;
-	Context ctx = {0};
-	gdouble _tmp8_ = 0.0;
-	Context _tmp9_ = {0};
-	gdouble _tmp10_ = 0.0;
+	HashMap* l = NULL;
+	HashMap* _tmp2_ = NULL;
+	gint v = 0;
+	HashMap* _tmp3_ = NULL;
+	gint _tmp4_ = 0;
+	HashMap* _tmp5_ = NULL;
+	gboolean _tmp6_ = FALSE;
+	Game* game = NULL;
+	Game* _tmp7_ = NULL;
+	Game* _tmp8_ = NULL;
+	SDL_Surface* _tmp9_ = NULL;
+	Game* _tmp10_ = NULL;
+	SDL_Surface* _tmp11_ = NULL;
+	Game* _tmp13_ = NULL;
+	Game* _tmp14_ = NULL;
+	Game* _tmp15_ = NULL;
 	_tmp0_ = SDL_Init ((guint32) SDL_INIT_VIDEO);
 	if (_tmp0_ < 0) {
 		const gchar* _tmp1_ = NULL;
@@ -88,34 +310,43 @@ void _vala_main (gchar** args, int args_length1) {
 		g_print ("Unable to init SDL %s\n", _tmp1_);
 		return;
 	}
-	_tmp2_ = SDL_SetVideoMode (800, 300, 32, (guint32) (SDL_HWSURFACE | SDL_DOUBLEBUF));
-	surface = _tmp2_;
-	_tmp3_ = surface;
-	if (_tmp3_ == NULL) {
-		const gchar* _tmp4_ = NULL;
-		_tmp4_ = SDL_GetError ();
-		g_print ("Unable to set video %s\n", _tmp4_);
-		return;
+	_tmp2_ = hash_map_new ();
+	l = _tmp2_;
+	v = 42;
+	_tmp3_ = l;
+	_tmp4_ = v;
+	hash_map_add (_tmp3_, "frodo", (gpointer) ((gintptr) _tmp4_));
+	_tmp5_ = l;
+	_tmp6_ = hash_map_hasKey (_tmp5_, "frodo");
+	if (_tmp6_) {
+		g_print ("Found\n");
+	} else {
+		g_print ("Not Found\n");
 	}
-	_tmp5_ = SDL_LoadBMP ("assets/images/background.png");
-	_SDL_FreeSurface0 (bgd);
-	bgd = _tmp5_;
-	_tmp6_ = bgd;
-	if (_tmp6_ == NULL) {
-		const gchar* _tmp7_ = NULL;
-		_tmp7_ = SDL_GetError ();
-		g_print ("Unable to load bpm %s\n", _tmp7_);
+	_tmp7_ = game_new ();
+	game = _tmp7_;
+	_tmp8_ = game;
+	_tmp9_ = SDL_SetVideoMode (600, 480, 32, (guint32) (SDL_HWSURFACE | SDL_DOUBLEBUF));
+	_tmp8_->surface = _tmp9_;
+	_tmp10_ = game;
+	_tmp11_ = _tmp10_->surface;
+	if (_tmp11_ == NULL) {
+		const gchar* _tmp12_ = NULL;
+		_tmp12_ = SDL_GetError ();
+		g_print ("Unable to set video mode %s\n", _tmp12_);
+		_game_free0 (game);
+		_hash_map_free0 (l);
 		return;
 	}
 	SDL_WM_SetCaption ("ShmupWarz", "ShmupWarz");
-	_tmp8_ = emscripten_get_now ();
-	_tmp9_.mark1 = _tmp8_ / 1000;
-	_tmp9_.mark2 = (gdouble) 0;
-	_tmp9_.delta = (gdouble) 0;
-	ctx = _tmp9_;
-	_tmp10_ = emscripten_get_now ();
-	mark1 = _tmp10_ / 1000;
-	emscripten_set_main_loop_arg (_main_loop_em_arg_callback_func, &ctx, 0, 1);
+	_tmp13_ = game;
+	game_initialize (_tmp13_);
+	_tmp14_ = game;
+	game_start (_tmp14_);
+	_tmp15_ = game;
+	emscripten_set_main_loop_arg (_mainloop_em_arg_callback_func, _tmp15_, 0, 1);
+	_game_free0 (game);
+	_hash_map_free0 (l);
 }
 
 
@@ -128,74 +359,12 @@ int main (int argc, char ** argv) {
 }
 
 
-void main_loop (void* arg) {
-	Context* ctx = NULL;
+void mainloop (void* arg) {
+	Game* game = NULL;
 	void* _tmp0_ = NULL;
-	gdouble _tmp1_ = 0.0;
-	Context* _tmp2_ = NULL;
-	gdouble _tmp3_ = 0.0;
-	Context* _tmp4_ = NULL;
-	gdouble _tmp5_ = 0.0;
-	Context* _tmp6_ = NULL;
-	gdouble _tmp7_ = 0.0;
-	Context* _tmp8_ = NULL;
-	gdouble _tmp9_ = 0.0;
-	SDL_Event event = {0};
 	_tmp0_ = arg;
-	ctx = (Context*) _tmp0_;
-	_tmp1_ = emscripten_get_now ();
-	(*ctx).mark2 = _tmp1_ / 1000;
-	_tmp2_ = ctx;
-	_tmp3_ = (*_tmp2_).mark2;
-	_tmp4_ = ctx;
-	_tmp5_ = (*_tmp4_).mark1;
-	(*ctx).delta = _tmp3_ - _tmp5_;
-	_tmp6_ = ctx;
-	_tmp7_ = (*_tmp6_).mark2;
-	(*ctx).mark1 = _tmp7_;
-	_tmp8_ = ctx;
-	_tmp9_ = (*_tmp8_).delta;
-	g_print ("%f\n", _tmp9_);
-	while (TRUE) {
-		SDL_Event _tmp10_ = {0};
-		gint _tmp11_ = 0;
-		SDL_Event _tmp12_ = {0};
-		guchar _tmp13_ = '\0';
-		SDL_Surface* _tmp14_ = NULL;
-		SDL_Surface* _tmp15_ = NULL;
-		SDL_PixelFormat* _tmp16_ = NULL;
-		guint32 _tmp17_ = 0U;
-		SDL_Surface* _tmp18_ = NULL;
-		SDL_Surface* _tmp19_ = NULL;
-		SDL_Surface* _tmp20_ = NULL;
-		_tmp11_ = SDL_PollEvent (&_tmp10_);
-		event = _tmp10_;
-		if (!(_tmp11_ > 0)) {
-			break;
-		}
-		_tmp12_ = event;
-		_tmp13_ = _tmp12_.type;
-		switch (_tmp13_) {
-			case SDL_QUIT:
-			{
-				{
-				}
-				break;
-			}
-			default:
-			break;
-		}
-		_tmp14_ = surface;
-		_tmp15_ = surface;
-		_tmp16_ = _tmp15_->format;
-		_tmp17_ = SDL_MapRGB (_tmp16_, (guchar) 255, (guchar) 0, (guchar) 0);
-		SDL_FillRect (_tmp14_, NULL, _tmp17_);
-		_tmp18_ = bgd;
-		_tmp19_ = surface;
-		SDL_UpperBlit (_tmp18_, NULL, _tmp19_, NULL);
-		_tmp20_ = surface;
-		SDL_Flip (_tmp20_);
-	}
+	game = (Game*) _tmp0_;
+	game_update (game);
 }
 
 

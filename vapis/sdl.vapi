@@ -515,7 +515,7 @@ namespace SDL {
 
 	[CCode (cname="SDL_Event", has_type_id=false)]
 	public struct Event {
-		public uchar type;
+		public int type;
 		public ActiveEvent active;
 		public KeyboardEvent key;
 		public MouseMotionEvent motion;

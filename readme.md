@@ -8,6 +8,10 @@ https://github.com/radare/posixvala
 #### notes
 no data structs (list, dict, array are from libGee), only GList, struct and [].
 however, libGee is implemented in Vala. check dova-core for tips on integrating my own no-g version of libGee
+missing some string handling - regex based
+no virtual or override
+no interface
+no abstract
 
 
 
