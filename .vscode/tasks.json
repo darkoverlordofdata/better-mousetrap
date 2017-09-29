@@ -1,17 +1,50 @@
 {
-    "version": "0.1.0",
-    "command": "/bin/sh",
-    "cwd": "${workspaceRoot}",
-    "isShellCommand": true,
-    "args": ["-c"],
-    "showOutput": "always",
-    "echoCommand": true,
-    "suppressTaskName": true,
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
     "tasks": [
         {
-            "isBuildCommand": true,
             "taskName": "build",
-            "args": ["posixvalac -C --vapidir ./vapis --pkg sdl --pkg emscripten --save-temps --disable-warnings emcc/demo.gs emcc/game.gs emcc/components.gs emcc/factory.gs emcc/entitas.gs emcc/hashmap.gs && emcc `pkg-config posixvala --cflags` -O2 -s WASM=1 --use-preload-plugins --preload-file assets -o emcc/index.html emcc/demo.c emcc/game.c emcc/components.c emcc/factory.c emcc/entitas.c emcc/hashmap.c"]
+            "type": "shell",
+            "command": "valac",
+            "args": [
+                "--ccode",
+                "--cc clang",
+                "--Xcc -std=c99",
+                "--vapidir ./vapis",
+                "--pkg gio-2.0",
+                "--pkg gee-0.8",
+                "--pkg sdl2",
+                "--pkg SDL2_image",
+                "--pkg SDL2_mixer",
+                "--pkg SDL2_ttf",
+                "--Xcc -lSDL2",
+                "--Xcc -lSDL2_image",
+                "--Xcc -lSDL2_mixer",
+                "--Xcc -lSDL2_ttf",
+                "--Xcc -lm",
+                "--output bin/mousetrap.exe",
+                "src/resources.c",
+                "src/components.vala",
+                "src/entities.vala",
+                "src/systems.gs",
+                "src/game.gs",
+                "src/main.vala"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "taskName": "resources",
+            "type": "shell",
+            "command": "glib-compile-resources",
+            "args": [
+                "--sourcedir",  "./data", 
+                "--target",     "./src/resources.c",
+                "--generate",   "./data/resources.gresource.xml"
+            ]
         }
     ]
 }

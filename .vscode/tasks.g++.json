@@ -1,0 +1,36 @@
+//
+//  Run using msys2 terminal:
+// "terminal.integrated.shell.windows": "C:\\msys64\\usr\\bin\\bash.exe",
+// "terminal.integrated.shellArgs.windows": ["-lic", "cd $OLDPWD; exec bash"],
+//
+//
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "taskName": "build",
+            "type": "process",
+            "command": "g++",
+            "args": [
+                "-g",
+                "-Wl,--subsystem,windows",
+                "-IC:/Users/darko/source/SDL2/include",
+                "-LC:/Users/darko/source/SDL2/lib",
+                "-O3",
+                "-lSDL2",
+                "-lSDL2_image",
+                "-lSDL2_mixer",
+                "-lSDL2_ttf",
+                "-obin/mousetrap.exe",
+                "cpp/entities.cc",
+                "cpp/systems.cc",
+                "cpp/game.cc",
+                "cpp/main.cc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }        
+    ]
+}

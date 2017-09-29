@@ -1,5 +1,9 @@
 {
+    // "terminal.integrated.shell.windows": "C:\\msys64\\usr\\bin\\bash.exe",
+    // "terminal.integrated.shellArgs.windows": ["-lic", "cd $OLDPWD; exec bash"],
     "files.associations": {
+        "Cakefile": "coffeescript",
+        "*.gs": "genie",
         "*.lzz": "cpp",
         "system_error": "cpp",
         "array": "cpp",
@@ -28,6 +32,9 @@
         "chrono": "cpp",
         "cmath": "cpp",
         "limits": "cpp",
-        "string": "cpp"
+        "string": "cpp",
+        "xlocale": "cpp",
+        "xstring": "cpp",
+        "xutility": "cpp"
     }
 }

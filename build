@@ -1,21 +1,33 @@
 #!/usr/bin/env bash
 
-posixvalac -C \
-    --vapidir ./vapis \
-    --pkg sdl \
-    --pkg emscripten \
-    --save-temps \
-    --disable-warnings \
-    emcc/demo.gs
+g++     -std=c++14 -v \
+        -g -Wl,--subsystem,windows \
+        -IC:/Users/darko/source/SDL2/include \
+        -LC:/Users/darko/source/SDL2/lib \
+        -O3 \
+        -lSDL2 \
+        -lSDL2_image \
+        -lSDL2_mixer \
+        -lSDL2_ttf \
+        -obin/mousetrap.exe \
+        src/entities.cc \
+        src/entity.cc \
+        src/systems.cc \
+        src/game.cc \
+        src/main.cc 
 
-emcc `pkg-config posixvala --cflags` \
-    -O2 \
-    -s WASM=1 \
-    -s USE_SDL=1 \
-    -s USE_SDL_IMAGE=1 \
-    -s USE_SDL_TTF=1  \
-    --preload-file assets \
-    -o emcc/index.html \
-    emcc/demo.c 
-
+# g++     -std=c++14 -v \
+#         -g -Wl,--subsystem,windows \
+#         -IC:/Users/darko/source/SDL2/include \
+#         -LC:/Users/darko/source/SDL2/lib \
+#         -O3 \
+#         -lSDL2 \
+#         -lSDL2_image \
+#         -lSDL2_mixer \
+#         -lSDL2_ttf \
+#         -obin/mousetrap.exe \
+#         cpp/entities.cc \
+#         cpp/systems.cc \
+#         cpp/game.cc \
+#         cpp/main.cc 
 

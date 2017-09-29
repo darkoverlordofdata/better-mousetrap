@@ -1,19 +1,22 @@
 ## <img title="A New Hope" src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Rebel_Alliance_logo.svg" width="64">
 
-Compile vala/genie to wasm using emscripten. 
-Initially, this works with classic (stable) SDL. 
+Better mousetrap revisited for Window 10 with msys2
 
-https://github.com/radare/posixvala
+Yuk -
+there is no SDL2 package for msys2, so I have to manually copy from the sdl*.tar.gz's to 
 
-#### notes
-no data structs (list, dict, array are from libGee), only GList, struct and [].
-however, libGee is implemented in Vala. check dova-core for tips on integrating my own no-g version of libGee
-missing some string handling - regex based
-no virtual or override
-no interface
-no abstract
+    C:\msys64\mingw64\bin
+    C:\msys64\mingw64\include
+    C:\msys64\mingw64\lib
+    C:\msys64\mingw64\lib\pkgconfig
 
+Reasons to continue using vala rather than c++ even on windows:
 
+* vala compiles faster
+* c++ images don't display correctly in gdb
+* clang works from vala. I cannot get it to work standalone in windows.
+* plus all the usual reasons
 
+glib-compile-resources --sourcedir ./data --target src.gs/resources.c --generate ./data/resources.gresource.xml
 
 Rebel Alliance logo By User:Tkgd2007 [Public domain], via Wikimedia Commons
